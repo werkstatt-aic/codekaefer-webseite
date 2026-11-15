@@ -17,7 +17,7 @@
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 76px; }
-body { margin: 0; font: 17px/1.6 var(--schrift); color: var(--tinte); background: var(--creme); -webkit-font-smoothing: antialiased; }
+body { margin: 0; font: 17px/1.6 var(--schrift); color: var(--tinte); background-color: var(--creme); background-image: radial-gradient(rgba(217,207,187,.75) 2.1px, transparent 2.4px); background-size: 19px 19px; -webkit-font-smoothing: antialiased; }
 img { max-width: 100%; height: auto; display: block; }
 a { color: var(--led-dunkel); }
 a:hover { color: var(--tinte); }
@@ -55,9 +55,13 @@ header.kopf { position: sticky; top: 0; z-index: 10; background: rgba(247,242,23
 .held .knoepfe { display: flex; gap: 12px; flex-wrap: wrap; }
 .held .klein-info { margin-top: 1.4em; font-size: .92rem; color: var(--grau); display: flex; gap: 18px; flex-wrap: wrap; }
 .held .klein-info span::before { content: "✓ "; color: var(--gruen); font-weight: 800; }
-.bildschirm { border-radius: 12px; overflow: hidden; background: var(--tinte); padding: 26px 0 0; box-shadow: 0 30px 60px -20px rgba(28,27,41,.45), 0 0 0 1px rgba(28,27,41,.08); position: relative; }
-.bildschirm::before { content: ""; position: absolute; top: 9px; left: 14px; width: 9px; height: 9px; border-radius: 50%; background: #ff5f57; box-shadow: 15px 0 0 #febc2e, 30px 0 0 #28c840; }
-.held .bildschirm { transform: rotate(-.6deg); }
+/* Programmfenster im Windows-Stil */
+.bildschirm { border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 30px 60px -20px rgba(28,27,41,.45), 0 0 0 1px rgba(28,27,41,.14); }
+.titel { display: flex; align-items: center; height: 32px; background: #f3f3f3; border-bottom: 1px solid #e3e3e3; font: 12px/1 "Segoe UI", system-ui, sans-serif; color: #1f1f1f; }
+.titel img { width: 16px; height: 16px; margin: 0 8px 0 12px; }
+.titel span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.titel i { width: 46px; height: 32px; display: grid; place-items: center; font-style: normal; }
+.titel i svg { width: 10px; height: 10px; stroke: #1f1f1f; stroke-width: 1; fill: none; }
 @media (max-width: 900px) { .held .wrap { grid-template-columns: 1fr; } .held { padding-top: 36px; } }
 
 /* Platinen-Leiste */
@@ -71,7 +75,8 @@ section.abschnitt { padding: 84px 0; }
 section.dunkel { background: var(--tinte); color: var(--creme); }
 section.dunkel .kicker { color: var(--led); }
 section.dunkel p, section.dunkel li { color: #d9d4ca; }
-section.hell { background: var(--weiss); }
+section.hell { background: transparent; }
+section.hell, section.dunkel { position: relative; }
 .kopfzeile { max-width: 46em; margin-bottom: 44px; }
 .kopfzeile p { font-size: 1.12rem; color: var(--grau); }
 section.dunkel .kopfzeile p { color: #c9c3b8; }
