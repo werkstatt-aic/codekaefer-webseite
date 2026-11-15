@@ -151,3 +151,22 @@ footer.fuss img { height: 34px; width: auto; }
 .text h1 { font-size: 2.2rem; }
 .text h2 { font-size: 1.3rem; margin-top: 1.8em; }
 .luecke { background: #ffe2b8; border-radius: 4px; padding: 0 .3em; font-weight: 600; }
+
+/* Download */
+.dl-liste { display: flex; flex-direction: column; gap: 16px; }
+.dl { background: var(--tinte-2); border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius); padding: 22px 24px; display: flex; gap: 20px; align-items: center; justify-content: space-between; }
+.dl h3 { color: var(--creme); margin: .2em 0 .3em; font-size: 1.35rem; }
+.dl p { margin: 0; font-size: .96rem; }
+.dl .art, .mat .art { font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.dl .art { color: var(--led); }
+.dl .knopf { flex: none; white-space: nowrap; }
+.knopf small { font-weight: 500; opacity: .75; font-size: .82em; }
+.knopf.rand.hell { color: var(--creme); border-color: var(--creme); }
+.knopf.rand.hell:hover { background: var(--creme); color: var(--tinte); }
+.schritte-liste { margin: 8px 0 0; padding-left: 1.3em; color: #d9d4ca; }
+.schritte-liste li { margin-bottom: .35em; }
+.schritte-liste b { color: var(--creme); }
+section.dunkel p.klein { font-size: .9rem; color: #a9a39a; margin: 0; }
+.karte a { color: var(--led-dunkel); }
+@media (max-width: 700px) { .dl { flex-direction: column; align-items: flex-start; } }
+.karte p { color: var(--grau) !important; }

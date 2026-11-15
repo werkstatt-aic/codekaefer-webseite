@@ -8,7 +8,7 @@
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="img/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
-<link rel="stylesheet" href="css/stil.css?v=2">
+<link rel="stylesheet" href="css/stil.css?v=3">
 <meta property="og:title" content="Codekäfer – Schaltungen bauen, simulieren, programmieren">
 <meta property="og:description" content="Blockbasierte Lernumgebung für Mikrocontroller im Technikunterricht.">
 <meta property="og:image" content="img/hero.webp">
@@ -24,7 +24,7 @@
       <a href="#schulserver">Schulserver</a>
       <a href="#material">Material</a>
       <a href="#fragen">Fragen</a>
-      <a class="knopf klein rand" href="#anfrage">Für Ihre Schule</a>
+      <a class="knopf klein rand" href="#download">Download</a>
     </nav>
   </div>
 </header>
@@ -38,10 +38,10 @@
       <h1>Schaltungen bauen, simulieren, <span class="mark">programmieren</span>.</h1>
       <p class="unter">Der Codekäfer verbindet alles in einem Programm: Schülerinnen und Schüler stecken die Schaltung am Bildschirm zusammen, programmieren mit Blöcken, probieren alles in der Simulation aus – und übertragen das Programm dann auf das echte Board.</p>
       <div class="knoepfe">
-        <a class="knopf voll" href="#anfrage">Für Ihre Schule anfragen</a>
+        <a class="knopf voll" href="#download">Kostenlos herunterladen</a>
         <a class="knopf rand" href="#so-gehts">So funktioniert's</a>
       </div>
-      <div class="klein-info"><span>ohne Installation</span><span>ohne Konto</span><span>läuft offline</span></div>
+      <div class="klein-info"><span>kostenlos</span><span>ohne Installation</span><span>ohne Konto</span><span>läuft offline</span></div>
     </div>
     <div class="bildschirm"><div class="titel" aria-hidden="true"><img src="img/favicon-32.png" alt=""><span>Codekäfer – 07 – Lena – Ampelschaltung</span><i><svg viewBox="0 0 10 10" width="10" height="10"><path d="M0 5h10"/></svg></i><i><svg viewBox="0 0 10 10" width="10" height="10"><rect x=".5" y=".5" width="9" height="9"/></svg></i><i><svg viewBox="0 0 10 10" width="10" height="10"><path d="M0 0l10 10M10 0L0 10"/></svg></i></div><img src="img/hero.webp" width="1600" height="900" alt="Der Codekäfer mit einer Ampelschaltung: links die Blöcke, rechts die Schaltung auf der Werkbank"></div>
   </div>
@@ -133,40 +133,61 @@
   </div>
 </section>
 
+<section class="abschnitt dunkel" id="download">
+  <div class="wrap">
+    <div class="kopfzeile">
+      <span class="kicker">Kostenlos</span>
+      <h2>Codekäfer herunterladen</h2>
+      <p>Der Codekäfer ist kostenlos. Einfach herunterladen, entpacken und starten – im Unterricht, an der eigenen Schule oder zu Hause.</p>
+    </div>
+    <div class="anfrage">
+      <div class="dl-liste">
+        <div class="dl">
+          <div><span class="art">Für die Schülerrechner · Windows</span><h3>Codekäfer</h3><p>Das Programm mit Werkbank, Blöcken, Simulation, Aufgaben und Beispielen. Läuft vom USB-Stick, vom Netzlaufwerk oder vom Schulrechner.</p></div>
+          <a class="knopf voll" href="https://github.com/werkstatt-aic/arduino-werkstatt/raw/main/update/Codekaefer.zip">ZIP herunterladen <small>3,5 MB</small></a>
+        </div>
+        <div class="dl">
+          <div><span class="art">Optional · Windows, Linux, Raspberry Pi</span><h3>Codekäfer Schulserver</h3><p>Klassen, Klassenzimmer-Übersicht, Aufgaben verteilen, Abgaben und Prüfungsmodus. Läuft auf einem Rechner im Schulnetz.</p></div>
+          <a class="knopf rand hell" href="https://github.com/werkstatt-aic/arduino-werkstatt/raw/main/update/Codekaefer-Schulserver.zip">ZIP herunterladen <small>12,6 MB</small></a>
+        </div>
+        <ol class="schritte-liste">
+          <li>ZIP-Datei herunterladen und entpacken (Rechtsklick › „Alle extrahieren …“).</li>
+          <li>Im Ordner <b>„Codekaefer starten.exe“</b> doppelklicken.</li>
+          <li>Warnt Windows beim ersten Start: „Weitere Informationen“ › „Trotzdem ausführen“.</li>
+          <li>Beim ersten Hochladen auf ein Board richtet der Codekäfer einmalig die Upload-Werkzeuge ein (dafür ist Internet nötig).</li>
+        </ol>
+        <p class="klein">Updates holt sich der Codekäfer selbst: Einstellungen › „Nach Updates suchen“. Updates sind digital signiert.</p>
+      </div>
+      <div class="karte">
+        <h3>Das brauchen Sie</h3>
+        <dl>
+          <dt>Rechner</dt><dd>Windows 10 oder 11 mit Chrome oder Edge</dd>
+          <dt>Boards</dt><dd>Arduino Uno (auch Nachbauten), ESP32, ESP32-C5, ESP8266, Calliope mini oder micro:bit</dd>
+          <dt>Bereitstellung</dt><dd>USB-Stick, Netzlaufwerk oder Schulrechner – ohne Installation</dd>
+          <dt>Schulserver</dt><dd>optional; ein Rechner im Schulnetz (Windows, Linux, Raspberry Pi)</dd>
+          <dt>Internet</dt><dd>nur einmalig zum Einrichten der Upload-Werkzeuge und für Updates</dd>
+        </dl>
+        <h3 style="margin-top:1.4em">Fragen oder Anregungen?</h3>
+        <p style="margin:0">Schreiben Sie mir gerne: <a href="mailto:kontakt@codekaefer.de?subject=Codek%C3%A4fer">kontakt@codekaefer.de</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="abschnitt" id="material">
   <div class="wrap">
     <div class="kopfzeile">
       <span class="kicker">Material</span>
-      <h2>Zum Weitergeben und Vorstellen</h2>
-      <p>Für die Fachschaft, die Schulleitung oder den Elternabend.</p>
+      <h2>Skript, Anleitungen und Broschüren</h2>
+      <p>Alles als PDF – für den Unterricht, die Fachschaft oder die Schulleitung.</p>
     </div>
     <div class="material">
+      <div class="mat"><span class="art">Schülerskript · 16 Seiten</span><h3>Programmieren mit dem Codekäfer</h3><p>Von der ersten LED über LCD, Töne, Servo und Sensoren bis zu eigenen Projekten – mit Aufgaben auf jeder Seite.</p><a class="knopf klein voll" href="material/codekaefer-schuelerskript.pdf">PDF herunterladen</a></div>
+      <div class="mat"><span class="art">Anleitung · Lehrkräfte</span><h3>Der Schulserver im Unterricht</h3><p>Klassen anlegen, Klassenzimmer öffnen, Aufgaben verteilen, Abgaben und Prüfungen.</p><a class="knopf klein rand" href="material/codekaefer-schulserver-lehrkraefte.pdf">PDF herunterladen</a></div>
+      <div class="mat"><span class="art">Anleitung · Admins</span><h3>Installation im Schulnetz</h3><p>Codekäfer auf dem Netzlaufwerk bereitstellen und den Schulserver einrichten.</p><a class="knopf klein rand" href="material/codekaefer-installation-admins.pdf">PDF herunterladen</a></div>
       <div class="mat"><span class="art">Flyer · 2 Seiten</span><h3>Der Codekäfer im Überblick</h3><p>Was der Codekäfer kann, was die Schule braucht – kurz und knapp.</p><a class="knopf klein rand" href="material/codekaefer-flyer.pdf">PDF öffnen</a></div>
       <div class="mat"><span class="art">Faltblatt · A4 quer</span><h3>Für die Fachschaft</h3><p>Zum Auslegen in der Fachschaftssitzung oder beim Tag der offenen Tür.</p><a class="knopf klein rand" href="material/codekaefer-faltblatt.pdf">PDF öffnen</a></div>
       <div class="mat"><span class="art">Information · 2 Seiten</span><h3>Für die Schulleitung</h3><p>Pädagogischer Nutzen, Datenschutz, Technik und Aufwand für die Schule.</p><a class="knopf klein rand" href="material/codekaefer-info-schulleitung.pdf">PDF öffnen</a></div>
-    </div>
-    <div class="hinweis">Schülerskript, Lehrer- und Admin-Anleitung gibt es für Schulen, die den Codekäfer einsetzen – zusammen mit dem Programm.</div>
-  </div>
-</section>
-
-<section class="abschnitt dunkel" id="anfrage">
-  <div class="wrap anfrage">
-    <div>
-      <span class="kicker">Für Ihre Schule</span>
-      <h2>Den Codekäfer im eigenen Unterricht einsetzen</h2>
-      <p>Sie unterrichten Technik oder Informatik und möchten den Codekäfer an Ihrer Schule nutzen? Schreiben Sie mir kurz, an welcher Schule Sie unterrichten und welche Boards Sie verwenden. Sie erhalten dann das Programm, das Schülerskript und die Anleitungen.</p>
-      <p><a class="knopf voll" href="mailto:kontakt@codekaefer.de?subject=Codek%C3%A4fer%20f%C3%BCr%20unsere%20Schule">E-Mail schreiben</a></p>
-      <p style="font-size:.95rem">kontakt@codekaefer.de</p>
-    </div>
-    <div class="karte">
-      <h3>Das braucht die Schule</h3>
-      <dl>
-        <dt>Rechner</dt><dd>Windows 10 oder 11 mit Chrome oder Edge</dd>
-        <dt>Boards</dt><dd>Arduino Uno (auch Nachbauten), ESP32, ESP32-C5, ESP8266, Calliope mini oder micro:bit</dd>
-        <dt>Bereitstellung</dt><dd>USB-Stick, Netzlaufwerk oder Schulrechner – ohne Installation</dd>
-        <dt>Schulserver</dt><dd>optional; ein Rechner im Schulnetz (Windows, Linux, Raspberry Pi)</dd>
-        <dt>Internet</dt><dd>nur einmalig zum Einrichten der Upload-Werkzeuge und für Updates</dd>
-      </dl>
     </div>
   </div>
 </section>
