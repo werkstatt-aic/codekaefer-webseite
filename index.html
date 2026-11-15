@@ -8,7 +8,7 @@
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="img/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
-<link rel="stylesheet" href="css/stil.css?v=4">
+<link rel="stylesheet" href="css/stil.css?v=5">
 <meta property="og:title" content="Codekäfer – Schaltungen bauen, programmieren, simulieren">
 <meta property="og:description" content="Blockbasierte Lernumgebung für Mikrocontroller im Technikunterricht.">
 <meta property="og:image" content="img/hero.webp">
@@ -22,7 +22,7 @@
       <a href="#so-gehts">So geht's</a>
       <a href="#unterricht">Für den Unterricht</a>
       <a href="#schulserver">Schulserver</a>
-      <a href="#material">Material</a>
+      <a href="#download">Material</a>
       <a href="#fragen">Fragen</a>
       <a class="knopf klein rand" href="#download">Download</a>
     </nav>
@@ -65,10 +65,10 @@
       <p>Alles passiert in einem Fenster. Wer einen Fehler macht, sieht ihn sofort – in der Simulation statt erst am Board.</p>
     </div>
     <div class="schritte">
-      <div class="schritt"><h3>Schaltung bauen</h3><p>Bauteile aus der Leiste auf die Werkbank ziehen und mit Kabeln verbinden – wie auf der echten Steckplatine.</p></div>
-      <div class="schritt"><h3>Mit Blöcken programmieren</h3><p>Programme aus Blöcken zusammensetzen. Auf Wunsch zeigt der Codekäfer den passenden C++-Code daneben.</p></div>
-      <div class="schritt"><h3>Simulieren</h3><p>LEDs leuchten, der Servo dreht, das Display zeigt Werte. Sensoren stellt man mit Schiebereglern ein.</p></div>
-      <div class="schritt"><h3>Hochladen</h3><p>Ein Klick überträgt das Programm per USB auf das Board – Calliope mini und micro:bit einfach per Laufwerk.</p></div>
+      <div class="schritt"><img src="img/schritt_bauen.webp" width="640" height="400" alt="" loading="lazy"><h3>Schaltung bauen</h3><p>Bauteile aus der Leiste auf die Werkbank ziehen und mit Kabeln verbinden – wie auf der echten Steckplatine.</p></div>
+      <div class="schritt"><img src="img/schritt_programmieren.webp" width="640" height="400" alt="" loading="lazy"><h3>Mit Blöcken programmieren</h3><p>Programme aus Blöcken zusammensetzen. Auf Wunsch zeigt der Codekäfer den passenden C++-Code daneben.</p></div>
+      <div class="schritt"><img src="img/schritt_simulieren.webp" width="640" height="400" alt="" loading="lazy"><h3>Simulieren</h3><p>LEDs leuchten, der Servo dreht, das Display zeigt Werte. Sensoren stellt man mit Schiebereglern ein.</p></div>
+      <div class="schritt"><img src="img/schritt_hochladen.webp" width="640" height="400" alt="" loading="lazy"><h3>Hochladen</h3><p>Ein Klick überträgt das Programm per USB auf das Board – Calliope mini und micro:bit einfach per Laufwerk.</p></div>
     </div>
 
     <div class="zeile" style="margin-top:72px">
@@ -80,7 +80,7 @@
           <li>Serieller Monitor und Messwerte zum Speichern für Excel.</li>
         </ul>
       </div>
-      <div><div class="rahmen"><img src="img/simulation.webp" width="1600" height="900" alt="Laufende Simulation im Codekäfer" loading="lazy"></div></div>
+      <div><div class="rahmen"><video src="img/simulation.mp4" poster="img/simulation-poster.webp" width="1440" height="672" autoplay muted loop playsinline preload="metadata" aria-label="Laufende Simulation: Die Ampel schaltet, der gerade ausgeführte Block ist hervorgehoben"></video></div><p class="unterschrift">Die Ampel in der Simulation – der gerade ausgeführte Block leuchtet mit.</p></div>
     </div>
     <div class="zeile umgekehrt">
       <div>
@@ -137,23 +137,45 @@
   </div>
 </section>
 
-<section class="abschnitt dunkel" id="download">
+<section class="abschnitt" id="download">
   <div class="wrap">
     <div class="kopfzeile">
       <span class="kicker">Kostenlos</span>
-      <h2>Codekäfer herunterladen</h2>
-      <p>Der Codekäfer ist kostenlos. Einfach herunterladen, entpacken und starten – im Unterricht, an der eigenen Schule oder zu Hause.</p>
+      <h2>Alles zum Herunterladen</h2>
+      <p>Der Codekäfer ist kostenlos – für den Unterricht, die eigene Schule und zu Hause.</p>
+    </div>
+
+    <h3 class="gruppe"><span>1</span> Installationsdateien</h3>
+    <div class="material zwei">
+      <div class="mat"><span class="art">Für die Schülerrechner · Windows · ZIP, 3,5 MB</span><h3>Codekäfer</h3><p>Das Programm mit Werkbank, Blöcken, Simulation, Aufgaben und Beispielen. Läuft vom USB-Stick, vom Netzlaufwerk oder vom Schulrechner.</p><a class="knopf voll" href="https://github.com/werkstatt-aic/arduino-werkstatt/raw/main/update/Codekaefer.zip">Codekäfer herunterladen</a></div>
+      <div class="mat"><span class="art">Optional · Windows, Linux, Raspberry Pi · ZIP, 12,6 MB</span><h3>Codekäfer Schulserver</h3><p>Klassen, Klassenzimmer-Übersicht, Aufgaben verteilen, Abgaben und Prüfungsmodus. Läuft auf einem Rechner im Schulnetz.</p><a class="knopf rand" href="https://github.com/werkstatt-aic/arduino-werkstatt/raw/main/update/Codekaefer-Schulserver.zip">Schulserver herunterladen</a></div>
+    </div>
+    <p class="verweis"><a href="#installation">So wird installiert ↓</a></p>
+
+    <h3 class="gruppe"><span>2</span> Skript und Anleitungen</h3>
+    <div class="material">
+      <div class="mat"><span class="art">Schülerskript · 16 Seiten</span><h3>Programmieren mit dem Codekäfer</h3><p>Von der ersten LED über LCD, Töne, Servo und Sensoren bis zu eigenen Projekten – mit Aufgaben auf jeder Seite.</p><a class="knopf klein voll" href="material/codekaefer-schuelerskript.pdf">PDF herunterladen</a></div>
+      <div class="mat"><span class="art">Anleitung · Lehrkräfte</span><h3>Der Schulserver im Unterricht</h3><p>Klassen anlegen, Klassenzimmer öffnen, Aufgaben verteilen, Abgaben und Prüfungen.</p><a class="knopf klein rand" href="material/codekaefer-schulserver-lehrkraefte.pdf">PDF herunterladen</a></div>
+      <div class="mat"><span class="art">Anleitung · Admins</span><h3>Installation im Schulnetz</h3><p>Codekäfer auf dem Netzlaufwerk bereitstellen und den Schulserver einrichten.</p><a class="knopf klein rand" href="material/codekaefer-installation-admins.pdf">PDF herunterladen</a></div>
+    </div>
+
+    <h3 class="gruppe"><span>3</span> Broschüren</h3>
+    <div class="material">
+      <div class="mat"><span class="art">Flyer · 2 Seiten</span><h3>Der Codekäfer im Überblick</h3><p>Was der Codekäfer kann, was die Schule braucht – kurz und knapp.</p><a class="knopf klein rand" href="material/codekaefer-flyer.pdf">PDF öffnen</a></div>
+      <div class="mat"><span class="art">Faltblatt · A4 quer</span><h3>Für die Fachschaft</h3><p>Zum Auslegen in der Fachschaftssitzung oder beim Tag der offenen Tür.</p><a class="knopf klein rand" href="material/codekaefer-faltblatt.pdf">PDF öffnen</a></div>
+      <div class="mat"><span class="art">Information · 2 Seiten</span><h3>Für die Schulleitung</h3><p>Pädagogischer Nutzen, Datenschutz, Technik und Aufwand für die Schule.</p><a class="knopf klein rand" href="material/codekaefer-info-schulleitung.pdf">PDF öffnen</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="abschnitt dunkel" id="installation">
+  <div class="wrap">
+    <div class="kopfzeile">
+      <span class="kicker">Installation</span>
+      <h2>In zwei Minuten startklar</h2>
     </div>
     <div class="anfrage">
-      <div class="dl-liste">
-        <div class="dl">
-          <div><span class="art">Für die Schülerrechner · Windows</span><h3>Codekäfer</h3><p>Das Programm mit Werkbank, Blöcken, Simulation, Aufgaben und Beispielen. Läuft vom USB-Stick, vom Netzlaufwerk oder vom Schulrechner.</p></div>
-          <a class="knopf voll" href="https://github.com/werkstatt-aic/arduino-werkstatt/raw/main/update/Codekaefer.zip">ZIP herunterladen <small>3,5 MB</small></a>
-        </div>
-        <div class="dl">
-          <div><span class="art">Optional · Windows, Linux, Raspberry Pi</span><h3>Codekäfer Schulserver</h3><p>Klassen, Klassenzimmer-Übersicht, Aufgaben verteilen, Abgaben und Prüfungsmodus. Läuft auf einem Rechner im Schulnetz.</p></div>
-          <a class="knopf rand hell" href="https://github.com/werkstatt-aic/arduino-werkstatt/raw/main/update/Codekaefer-Schulserver.zip">ZIP herunterladen <small>12,6 MB</small></a>
-        </div>
+      <div>
         <ol class="schritte-liste">
           <li>ZIP-Datei herunterladen und entpacken (Rechtsklick › „Alle extrahieren …“).</li>
           <li>Im Ordner <b>„Codekaefer starten.exe“</b> doppelklicken.</li>
@@ -174,24 +196,6 @@
         <h3 style="margin-top:1.4em">Fragen oder Anregungen?</h3>
         <p style="margin:0">Schreiben Sie mir gerne: <a href="mailto:kontakt@codekaefer.de?subject=Codek%C3%A4fer">kontakt@codekaefer.de</a></p>
       </div>
-    </div>
-  </div>
-</section>
-
-<section class="abschnitt" id="material">
-  <div class="wrap">
-    <div class="kopfzeile">
-      <span class="kicker">Material</span>
-      <h2>Skript, Anleitungen und Broschüren</h2>
-      <p>Alles als PDF – für den Unterricht, die Fachschaft oder die Schulleitung.</p>
-    </div>
-    <div class="material">
-      <div class="mat"><span class="art">Schülerskript · 16 Seiten</span><h3>Programmieren mit dem Codekäfer</h3><p>Von der ersten LED über LCD, Töne, Servo und Sensoren bis zu eigenen Projekten – mit Aufgaben auf jeder Seite.</p><a class="knopf klein voll" href="material/codekaefer-schuelerskript.pdf">PDF herunterladen</a></div>
-      <div class="mat"><span class="art">Anleitung · Lehrkräfte</span><h3>Der Schulserver im Unterricht</h3><p>Klassen anlegen, Klassenzimmer öffnen, Aufgaben verteilen, Abgaben und Prüfungen.</p><a class="knopf klein rand" href="material/codekaefer-schulserver-lehrkraefte.pdf">PDF herunterladen</a></div>
-      <div class="mat"><span class="art">Anleitung · Admins</span><h3>Installation im Schulnetz</h3><p>Codekäfer auf dem Netzlaufwerk bereitstellen und den Schulserver einrichten.</p><a class="knopf klein rand" href="material/codekaefer-installation-admins.pdf">PDF herunterladen</a></div>
-      <div class="mat"><span class="art">Flyer · 2 Seiten</span><h3>Der Codekäfer im Überblick</h3><p>Was der Codekäfer kann, was die Schule braucht – kurz und knapp.</p><a class="knopf klein rand" href="material/codekaefer-flyer.pdf">PDF öffnen</a></div>
-      <div class="mat"><span class="art">Faltblatt · A4 quer</span><h3>Für die Fachschaft</h3><p>Zum Auslegen in der Fachschaftssitzung oder beim Tag der offenen Tür.</p><a class="knopf klein rand" href="material/codekaefer-faltblatt.pdf">PDF öffnen</a></div>
-      <div class="mat"><span class="art">Information · 2 Seiten</span><h3>Für die Schulleitung</h3><p>Pädagogischer Nutzen, Datenschutz, Technik und Aufwand für die Schule.</p><a class="knopf klein rand" href="material/codekaefer-info-schulleitung.pdf">PDF öffnen</a></div>
     </div>
   </div>
 </section>
