@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codekäfer – Schaltungen bauen, simulieren, programmieren</title>
+<meta name="description" content="Der Codekäfer ist eine blockbasierte Lernumgebung für den Technikunterricht: Schaltung aufbauen, mit Blöcken programmieren, simulieren und auf Arduino, ESP32, Calliope mini oder micro:bit übertragen – ohne Installation, ohne Konto.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="stylesheet" href="css/stil.css">
+<meta property="og:title" content="Codekäfer – Schaltungen bauen, simulieren, programmieren">
+<meta property="og:description" content="Blockbasierte Lernumgebung für Mikrocontroller im Technikunterricht.">
+<meta property="og:image" content="img/hero.webp">
+</head>
+<body>
+
+<header class="kopf">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="Codekäfer – zum Seitenanfang"><img src="img/codekaefer-logo.svg" alt="Codekäfer" width="122" height="38"></a>
+    <nav aria-label="Hauptmenü">
+      <a href="#so-gehts">So geht's</a>
+      <a href="#unterricht">Für den Unterricht</a>
+      <a href="#schulserver">Schulserver</a>
+      <a href="#material">Material</a>
+      <a href="#fragen">Fragen</a>
+      <a class="knopf klein rand" href="#anfrage">Für Ihre Schule</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="held">
+  <div class="wrap">
+    <div>
+      <span class="kicker">Mikrocontroller im Technikunterricht</span>
+      <h1>Schaltungen bauen, simulieren, <span class="mark">programmieren</span>.</h1>
+      <p class="unter">Der Codekäfer verbindet alles in einem Programm: Schülerinnen und Schüler stecken die Schaltung am Bildschirm zusammen, programmieren mit Blöcken, probieren alles in der Simulation aus – und übertragen das Programm dann auf das echte Board.</p>
+      <div class="knoepfe">
+        <a class="knopf voll" href="#anfrage">Für Ihre Schule anfragen</a>
+        <a class="knopf rand" href="#so-gehts">So funktioniert's</a>
+      </div>
+      <div class="klein-info"><span>ohne Installation</span><span>ohne Konto</span><span>läuft offline</span></div>
+    </div>
+    <div class="bildschirm"><img src="img/hero.webp" width="1600" height="900" alt="Der Codekäfer mit einer Ampelschaltung: links die Blöcke, rechts die Schaltung auf der Werkbank"></div>
+  </div>
+</section>
+
+<div class="boards">
+  <div class="wrap">
+    <b>Arduino Uno</b><span class="sep"></span><b>ESP32</b><span class="sep"></span><b>ESP32-C5</b><span class="sep"></span><b>ESP8266</b><span class="sep"></span><b>Calliope mini</b><span class="sep"></span><b>micro:bit</b>
+  </div>
+</div>
+
+<section class="abschnitt" id="so-gehts">
+  <div class="wrap">
+    <div class="kopfzeile">
+      <span class="kicker">So geht's</span>
+      <h2>Vom Bauteil zum fertigen Programm – in vier Schritten</h2>
+      <p>Alles passiert in einem Fenster. Wer einen Fehler macht, sieht ihn sofort – in der Simulation statt erst am Board.</p>
+    </div>
+    <div class="schritte">
+      <div class="schritt"><h3>Schaltung bauen</h3><p>Bauteile aus der Leiste auf die Werkbank ziehen und mit Kabeln verbinden – wie auf der echten Steckplatine.</p></div>
+      <div class="schritt"><h3>Mit Blöcken programmieren</h3><p>Programme aus Blöcken zusammensetzen. Auf Wunsch zeigt der Codekäfer den passenden C++-Code daneben.</p></div>
+      <div class="schritt"><h3>Simulieren</h3><p>LEDs leuchten, der Servo dreht, das Display zeigt Werte. Sensoren stellt man mit Schiebereglern ein.</p></div>
+      <div class="schritt"><h3>Hochladen</h3><p>Ein Klick überträgt das Programm per USB auf das Board – Calliope mini und micro:bit einfach per Laufwerk.</p></div>
+    </div>
+
+    <div class="zeile" style="margin-top:72px">
+      <div>
+        <h3 style="font-size:1.5rem">Die Simulation zeigt, was passiert</h3>
+        <ul>
+          <li>Über 40 Bauteile: LEDs, Taster, LDR, Temperatur- und Ultraschallsensor, LCD und OLED, Servo, Motoren, Relais, NeoPixel und mehr.</li>
+          <li>Ein Hilfe-Knopf sieht Schaltung und Programm durch: LED ohne Vorwiderstand, Taster ohne Pull-down, vergessene Pausen …</li>
+          <li>Serieller Monitor und Messwerte zum Speichern für Excel.</li>
+        </ul>
+      </div>
+      <div><div class="rahmen"><img src="img/simulation.webp" width="1600" height="900" alt="Laufende Simulation im Codekäfer" loading="lazy"></div></div>
+    </div>
+    <div class="zeile umgekehrt">
+      <div>
+        <h3 style="font-size:1.5rem">Blöcke, die man versteht</h3>
+        <ul>
+          <li>Deutsche Blöcke, geordnet nach Aktoren, Sensoren, Steuerung und Operatoren.</li>
+          <li>Erweiterungen für Displays, Motoren, Tastenfeld, WLAN-Webseiten (ESP) und die LED-Anzeige von Calliope und micro:bit.</li>
+          <li>Der Umstieg ist eingebaut: Die Ansicht „Blöcke + Text“ zeigt das Programm als C++ – ein guter Einstieg in die Arduino IDE.</li>
+        </ul>
+      </div>
+      <div><div class="rahmen"><img src="img/code_text.webp" width="1600" height="900" alt="Blöcke und der passende C++-Code nebeneinander" loading="lazy"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="abschnitt dunkel" id="unterricht">
+  <div class="wrap">
+    <div class="kopfzeile">
+      <span class="kicker">Für den Unterricht</span>
+      <h2>Gemacht für den Technikraum</h2>
+      <p>Der Codekäfer entsteht im Technikunterricht einer Realschule – und ist auf das ausgelegt, was dort zählt: schnell starten, wenig Technik-Ärger, klare Aufgaben.</p>
+    </div>
+    <div class="kacheln">
+      <div class="kachel"><div class="sym"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M10 6h4"/></svg></div><h3>Läuft vom USB-Stick</h3><p>Nichts wird installiert. Startdatei doppelklicken – fertig. Auch vom Netzlaufwerk der Schule.</p></div>
+      <div class="kachel"><div class="sym"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div><h3>Datensparsam</h3><p>Kein Konto, keine Cloud, keine Werbung. Projekte bleiben auf dem Stick oder im Schulnetz.</p></div>
+      <div class="kachel"><div class="sym"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></div><h3>60 Aufgaben</h3><p>Aufgaben passend zum Schülerskript, mit Tipps und dem Knopf „Aufgabe prüfen“, der die Lösung automatisch testet.</p></div>
+      <div class="kachel"><div class="sym"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><h3>Nichts geht verloren</h3><p>Automatisches Speichern und Sicherungen – eine ältere Fassung ist mit zwei Klicks zurückgeholt.</p></div>
+      <div class="kachel"><div class="sym"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg></div><h3>Hilfe ohne KI</h3><p>Fest eingebaute Prüfungen erkennen typische Fehler und zeigen, wo es hakt – ohne Internet.</p></div>
+      <div class="kachel"><div class="sym"><svg viewBox="0 0 24 24"><path d="M4 19V5l8 4 8-4v14l-8-4z"/></svg></div><h3>Mit Schülerskript</h3><p>Ein Skript führt von der ersten LED über Sensoren bis zu eigenen Projekten.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="abschnitt hell" id="schulserver">
+  <div class="wrap">
+    <div class="zeile">
+      <div>
+        <span class="kicker">Codekäfer Schulserver</span>
+        <h2>Die ganze Klasse im Blick</h2>
+        <p>Mit dem Schulserver sieht die Lehrkraft im Browser, woran jede Schülerin und jeder Schüler gerade arbeitet – live, mit Mini-Ansicht der Schaltung.</p>
+        <ul>
+          <li><b>Stundencode an die Tafel</b> – die Klasse meldet sich mit Code, Platz-Nummer und Vorname an. Ohne Schüler-Konten.</li>
+          <li><b>Aufgaben und Beispiele</b> an die Klasse verteilen, Abgaben einsammeln.</li>
+          <li><b>Prüfungsmodus</b>: Vollbild, Hilfen gesperrt, Abgabe auf Knopfdruck.</li>
+          <li>Großansicht einzelner Projekte für die Besprechung am Beamer.</li>
+          <li>Läuft auf einem Rechner im Schulnetz: Windows, Linux oder Raspberry Pi.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="rahmen"><img src="img/klassenzimmer.webp" width="1600" height="1000" alt="Das virtuelle Klassenzimmer: Kacheln aller Schülerplätze mit Mini-Ansicht der Schaltung" loading="lazy"></div>
+        <p class="unterschrift">Das Klassenzimmer im Browser der Lehrkraft.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="abschnitt" id="material">
+  <div class="wrap">
+    <div class="kopfzeile">
+      <span class="kicker">Material</span>
+      <h2>Zum Weitergeben und Vorstellen</h2>
+      <p>Für die Fachschaft, die Schulleitung oder den Elternabend.</p>
+    </div>
+    <div class="material">
+      <div class="mat"><span class="art">Flyer · 2 Seiten</span><h3>Der Codekäfer im Überblick</h3><p>Was der Codekäfer kann, was die Schule braucht – kurz und knapp.</p><a class="knopf klein rand" href="material/codekaefer-flyer.pdf">PDF öffnen</a></div>
+      <div class="mat"><span class="art">Faltblatt · A4 quer</span><h3>Für die Fachschaft</h3><p>Zum Auslegen in der Fachschaftssitzung oder beim Tag der offenen Tür.</p><a class="knopf klein rand" href="material/codekaefer-faltblatt.pdf">PDF öffnen</a></div>
+      <div class="mat"><span class="art">Information · 2 Seiten</span><h3>Für die Schulleitung</h3><p>Pädagogischer Nutzen, Datenschutz, Technik und Aufwand für die Schule.</p><a class="knopf klein rand" href="material/codekaefer-info-schulleitung.pdf">PDF öffnen</a></div>
+    </div>
+    <div class="hinweis">Schülerskript, Lehrer- und Admin-Anleitung gibt es für Schulen, die den Codekäfer einsetzen – zusammen mit dem Programm.</div>
+  </div>
+</section>
+
+<section class="abschnitt dunkel" id="anfrage">
+  <div class="wrap anfrage">
+    <div>
+      <span class="kicker">Für Ihre Schule</span>
+      <h2>Den Codekäfer im eigenen Unterricht einsetzen</h2>
+      <p>Sie unterrichten Technik oder Informatik und möchten den Codekäfer an Ihrer Schule nutzen? Schreiben Sie mir kurz, an welcher Schule Sie unterrichten und welche Boards Sie verwenden. Sie erhalten dann das Programm, das Schülerskript und die Anleitungen.</p>
+      <p><a class="knopf voll" href="mailto:kontakt@codekaefer.de?subject=Codek%C3%A4fer%20f%C3%BCr%20unsere%20Schule">E-Mail schreiben</a></p>
+      <p style="font-size:.95rem">kontakt@codekaefer.de</p>
+    </div>
+    <div class="karte">
+      <h3>Das braucht die Schule</h3>
+      <dl>
+        <dt>Rechner</dt><dd>Windows 10 oder 11 mit Chrome oder Edge</dd>
+        <dt>Boards</dt><dd>Arduino Uno (auch Nachbauten), ESP32, ESP32-C5, ESP8266, Calliope mini oder micro:bit</dd>
+        <dt>Bereitstellung</dt><dd>USB-Stick, Netzlaufwerk oder Schulrechner – ohne Installation</dd>
+        <dt>Schulserver</dt><dd>optional; ein Rechner im Schulnetz (Windows, Linux, Raspberry Pi)</dd>
+        <dt>Internet</dt><dd>nur einmalig zum Einrichten der Upload-Werkzeuge und für Updates</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="abschnitt" id="fragen">
+  <div class="wrap" style="max-width:860px">
+    <div class="kopfzeile">
+      <span class="kicker">Fragen</span>
+      <h2>Häufige Fragen</h2>
+    </div>
+    <div class="fragen">
+      <details><summary>Muss etwas installiert werden?</summary><p>Nein. Der Codekäfer startet mit einem Doppelklick und öffnet sich in einem Chrome- bzw. Edge-Fenster. Er läuft vom USB-Stick, vom Netzlaufwerk oder von einem Schulrechner.</p></details>
+      <details><summary>Brauchen die Schülerinnen und Schüler ein Konto oder Internet?</summary><p>Nein. Es gibt keine Anmeldung bei einem Online-Dienst. Internet wird nur einmal zum Einrichten der Upload-Werkzeuge und für Updates gebraucht. Mit dem Schulserver melden sich die Schüler nur mit Stundencode, Platz-Nummer und Vorname an.</p></details>
+      <details><summary>Wo werden die Projekte gespeichert?</summary><p>Auf dem Stick, im persönlichen Ordner im Schulnetz oder – mit Schulserver – auf dem Server der Schule. Keine Daten verlassen die Schule.</p></details>
+      <details><summary>Was ist der Unterschied zu Online-Simulatoren?</summary><p>Der Codekäfer verbindet Schaltung, Blöcke, Simulation und das Hochladen auf das echte Board in einem Programm – ohne Konto und ohne Cloud. Dazu kommen Aufgaben mit automatischer Prüfung, ein Schülerskript und auf Wunsch der Schulserver mit Klassenzimmer und Prüfungsmodus.</p></details>
+      <details><summary>Welche Boards werden unterstützt?</summary><p>Arduino Uno (auch Nachbauten mit CH340), ESP32, ESP32-C5, ESP8266, Calliope mini und micro:bit. Vorhandene Sets der Schule lassen sich weiter nutzen.</p></details>
+      <details><summary>Früher hieß das Programm „Arduino-Werkstatt“?</summary><p>Ja. Seit Version 0.22 heißt es Codekäfer. Projekte, Aufgaben und Einstellungen bleiben gültig, ein Update genügt.</p></details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="fuss">
+  <div class="wrap">
+    <img src="img/codekaefer-logo-dunkel.svg" alt="Codekäfer" width="110" height="34">
+    <span>© Ulrich Aichler</span>
+    <span><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></span>
+  </div>
+</footer>
+</body>
+</html>
