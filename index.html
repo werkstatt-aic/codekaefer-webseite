@@ -93,6 +93,17 @@
       </div>
       <div><div class="rahmen"><img src="img/code_text.webp" width="1600" height="900" alt="Blöcke und der passende C++-Code nebeneinander" loading="lazy"></div></div>
     </div>
+    <div class="zeile">
+      <div>
+        <h3 style="font-size:1.5rem">Eigene Bauteile und Blöcke</h3>
+        <ul>
+          <li>Mit dem <b>Codekäfer-Baukasten</b> machen Lehrkräfte aus jedem Sensor oder Modul der Schulsammlung ein eigenes Bauteil: Bild hochladen, Anschlüsse daraufsetzen, Verhalten wählen.</li>
+          <li>Vorlagen für Eingaben wie hell/dunkel, warm/kalt, Abstand, Lautstärke oder Gas und für Ausgaben wie Licht, Schall, Bewegung und Anzeigen – in der Simulation mit Schieberegler, Leuchten und Ton.</li>
+          <li>Eigene Blöcke mit eigenem C++-Code, der auch in der Simulation mitläuft. Verteilt wird die Erweiterung als Datei oder über den Schulserver.</li>
+        </ul>
+      </div>
+      <div><div class="rahmen"><img src="img/baukasten.webp" width="1600" height="983" alt="Der Codekäfer-Baukasten: ein Gassensor-Modul mit Bild, Anschlüssen und Messgröße" loading="lazy"></div><p class="unterschrift">Ein Gassensor entsteht im Baukasten – mit Messgröße „Gas“, Analog- und Schaltausgang.</p></div>
+    </div>
   </div>
 </section>
 
@@ -124,6 +135,7 @@
         <ul>
           <li><b>Stundencode an die Tafel</b> – die Klasse meldet sich mit Code, Platz-Nummer und Vorname an. Ohne Schüler-Konten.</li>
           <li><b>Aufgaben und Beispiele</b> an die Klasse verteilen, Abgaben einsammeln.</li>
+          <li><b>Eigene Bauteile und Blöcke</b> aus dem Baukasten an alle Rechner verteilen.</li>
           <li><b>Prüfungsmodus</b>: Vollbild, Hilfen gesperrt, Abgabe auf Knopfdruck.</li>
           <li>Großansicht einzelner Projekte für die Besprechung am Beamer.</li>
           <li>Läuft auf einem Rechner im Schulnetz: Windows, Linux oder Raspberry Pi.</li>
@@ -147,15 +159,16 @@
 
     <h3 class="gruppe"><span>1</span> Installationsdateien</h3>
     <div class="material zwei">
-      <div class="mat"><span class="art">Für die Schülerrechner · Windows · ZIP, 3,5 MB</span><h3>Codekäfer</h3><p>Das Programm mit Werkbank, Blöcken, Simulation, Aufgaben und Beispielen. Läuft vom USB-Stick, vom Netzlaufwerk oder vom Schulrechner.</p><a class="knopf voll" href="https://github.com/werkstatt-aic/codekaefer/raw/main/update/Codekaefer.zip">Codekäfer herunterladen</a></div>
+      <div class="mat"><span class="art">Für die Schülerrechner · Windows · ZIP, 6,6 MB</span><h3>Codekäfer</h3><p>Das Programm mit Werkbank, Blöcken, Simulation, Aufgaben und Beispielen – dazu der Baukasten für eigene Bauteile und Blöcke. Läuft vom USB-Stick, vom Netzlaufwerk oder vom Schulrechner.</p><a class="knopf voll" href="https://github.com/werkstatt-aic/codekaefer/raw/main/update/Codekaefer.zip">Codekäfer herunterladen</a></div>
       <div class="mat"><span class="art">Optional · Windows, Linux, Raspberry Pi · ZIP, 12,6 MB · kostenlos bis 1.10.2027</span><h3>Codekäfer Schulserver</h3><p>Klassen, Klassenzimmer-Übersicht, Aufgaben verteilen, Abgaben und Prüfungsmodus. Läuft auf einem Rechner im Schulnetz.</p><a class="knopf rand" href="https://github.com/werkstatt-aic/codekaefer/raw/main/update/Codekaefer-Schulserver.zip">Schulserver herunterladen</a></div>
     </div>
     <p class="verweis"><a href="#installation">So wird installiert ↓</a></p>
 
     <h3 class="gruppe"><span>2</span> Skript und Anleitungen</h3>
-    <div class="material">
+    <div class="material vier">
       <div class="mat"><span class="art">Schülerskript · 16 Seiten</span><h3>Programmieren mit dem Codekäfer</h3><p>Von der ersten LED über LCD, Töne, Servo und Sensoren bis zu eigenen Projekten – mit Aufgaben auf jeder Seite.</p><a class="knopf klein voll" href="material/codekaefer-schuelerskript.pdf">PDF herunterladen</a></div>
       <div class="mat"><span class="art">Anleitung · Lehrkräfte</span><h3>Der Schulserver im Unterricht</h3><p>Klassen anlegen, Klassenzimmer öffnen, Aufgaben verteilen, Abgaben und Prüfungen.</p><a class="knopf klein rand" href="material/codekaefer-schulserver-lehrkraefte.pdf">PDF herunterladen</a></div>
+      <div class="mat"><span class="art">Anleitung · Baukasten</span><h3>Eigene Bauteile und Blöcke</h3><p>Der Codekäfer-Baukasten Schritt für Schritt am Beispiel eines Gassensors – mit Nachschlageteil.</p><a class="knopf klein rand" href="material/codekaefer-baukasten-anleitung.pdf">PDF herunterladen</a></div>
       <div class="mat"><span class="art">Anleitung · Admins</span><h3>Installation im Schulnetz</h3><p>Codekäfer auf dem Netzlaufwerk bereitstellen und den Schulserver einrichten.</p><a class="knopf klein rand" href="material/codekaefer-installation-admins.pdf">PDF herunterladen</a></div>
     </div>
     <div class="material" style="margin-top:18px">
@@ -217,6 +230,7 @@
       <details><summary>Wo werden die Projekte gespeichert?</summary><p>Auf dem Stick, im persönlichen Ordner im Schulnetz oder – mit Schulserver – auf dem Server der Schule. Keine Daten verlassen die Schule.</p></details>
       <details><summary>Was ist der Unterschied zu Online-Simulatoren?</summary><p>Der Codekäfer verbindet Schaltung, Blöcke, Simulation und das Hochladen auf das echte Board in einem Programm – ohne Konto und ohne Cloud. Dazu kommen Aufgaben mit automatischer Prüfung, ein Schülerskript und auf Wunsch der Schulserver mit Klassenzimmer und Prüfungsmodus.</p></details>
       <details><summary>Was kostet der Codekäfer?</summary><p>Der Codekäfer für die Schülerrechner und alle Materialien – Skript, Anleitungen, Broschüren – sind dauerhaft kostenlos. Der Schulserver ist bis zum 1. Oktober 2027 kostenlos. Danach braucht jede Schule eine Lizenz, Updates inklusive. Läuft die kostenlose Zeit ab, gehen keine Daten verloren: Klassen, Projekte und Abgaben bleiben erhalten.</p></details>
+      <details><summary>Kann man eigene Sensoren und Module ergänzen?</summary><p>Ja. Mit dem Codekäfer-Baukasten erstellen Lehrkräfte eigene Bauteile (mit eigenem Bild und Verhalten in der Simulation) und eigene Blöcke mit C++-Code – meist mit einer Vorlage in wenigen Minuten. Die Erweiterung wird als Datei weitergegeben oder über den Schulserver an alle Rechner verteilt; Projekte bringen ihre Erweiterungen selbst mit.</p></details>
       <details><summary>Welche Boards werden unterstützt?</summary><p>Arduino Uno (auch Nachbauten mit CH340), ESP32, ESP32-C5, ESP8266, Calliope mini und micro:bit. Vorhandene Sets der Schule lassen sich weiter nutzen.</p></details>
     </div>
   </div>
