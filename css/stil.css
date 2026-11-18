@@ -144,7 +144,6 @@ footer.fuss { background: var(--tinte); color: #bdb7ad; padding: 40px 0; font-si
 footer.fuss .wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
 footer.fuss a { color: var(--creme); text-decoration: none; margin-left: 20px; }
 footer.fuss a:hover { color: var(--led); }
-footer.fuss a.schule { margin-left: 0; text-decoration: underline; text-underline-offset: 3px; }
 footer.fuss img { height: 34px; width: auto; }
 
 /* Unterseiten */
