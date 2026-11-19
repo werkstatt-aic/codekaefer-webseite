@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Strom aus Pflanzen – Wie funktioniert eine Pflanzen-Brennstoffzelle?</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<style>
+  html, body { margin: 0; height: 100%; background: #1e2026; overflow: hidden; }
+  #wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; cursor: pointer; }
+  #fs { position: fixed; right: 14px; top: 12px; z-index: 2; font: 600 14px "Segoe UI", system-ui, sans-serif;
+        background: rgba(255,255,255,.9); color: #222; border: 1px solid #ccc; border-radius: 8px; padding: 6px 10px;
+        cursor: pointer; opacity: 0; transition: opacity .3s; }
+  body.mouse #fs { opacity: 1; }
+  #hint { display: none; position: fixed; left: 0; right: 0; bottom: 18%; text-align: center; color: #e8e6e1;
+          font: 600 16px "Segoe UI", system-ui, sans-serif; }
+  @media (orientation: portrait) and (max-width: 700px) { #hint { display: block; } }
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="c"></canvas></div>
+<div id="hint">↻ Handy quer halten für ein größeres Bild<br>Zum Weiterschalten auf das Bild tippen</div>
+<button id="fs" title="Vollbild (Taste F)">⛶ Vollbild</button>
+<script>
+'use strict';
+// ============================================================ setup
+const W = 1280, H = 720;
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+let SCALE = 1;
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  const s = Math.min(innerWidth / W, innerHeight / H);
+  cv.style.width = W * s + 'px'; cv.style.height = H * s + 'px';
+  cv.width = Math.round(W * s * dpr); cv.height = Math.round(H * s * dpr);
+  SCALE = s * dpr;
+}
+addEventListener('resize', resize); resize();
+
+const BG = [246, 243, 236], TEXT = [32, 36, 46], MUTED = [100, 106, 118], ACCENT = [232, 128, 30];
+const E_COL = [40, 105, 225], E_LINE = [20, 60, 160];
+const P_COL = [222, 70, 58], P_LINE = [150, 35, 30];
+const SUGAR = [246, 160, 40], SUGAR_LINE = [190, 110, 20];
+const BACT = [120, 196, 98], BACT_LINE = [55, 125, 55];
+const O2_COL = [205, 238, 250], O2_LINE = [60, 150, 195];
+const CO2_C = [110, 112, 120], CO2_O = [200, 200, 205], CO2_LINE = [90, 90, 98];
+const WATER = [110, 195, 240];
+const SOIL = [150, 108, 70], SOIL_DOT = [125, 88, 55];
+const WATER_LAYER = [178, 218, 238], GRAPHITE = [52, 55, 63], ROOT = [236, 218, 175], WIRE = [85, 85, 92];
+const WHITE = [255, 255, 255];
+
+const FAM = 'Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const WEIGHT = { Regular: 400, Medium: 500, SemiBold: 600, Bold: 700 };
+const F = (size, w) => `${WEIGHT[w] || 400} ${size}px ${FAM}`;
+
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const prog = (t, a, b) => b <= a ? (t >= a ? 1 : 0) : clamp((t - a) / (b - a));
+const ease = x => { x = clamp(x); return x * x * (3 - 2 * x); };
+const bump = (t, a, b) => (t < a || t > b) ? 0 : Math.sin(Math.PI * (t - a) / (b - a));
+const lerp = (a, b, u) => a + (b - a) * u;
+const lerp2 = (p, q, u) => [lerp(p[0], q[0], u), lerp(p[1], q[1], u)];
+const C = (c, a = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${clamp(a)})`;
+const dist = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]);
+
+function Rng(seed) {
+  let s = Math.imul((seed + 1) ^ 0x5bd1e995, 2654435761) >>> 0;
+  const r = {
+    next() { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; },
+    uniform(a, b) { return a + (b - a) * this.next(); },
+    randrange(n) { return Math.floor(this.next() * n); },
+    choice(arr) { return arr[this.randrange(arr.length)]; },
+  };
+  r.next(); r.next();
+  return r;
+}
+
+// ============================================================ primitives
+function circ(x, y, r, fill, a = 1, outline = null, w = 0) {
+  if (a <= 0.01 || r <= 0) return;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+  if (fill) { ctx.fillStyle = C(fill, a); ctx.fill(); }
+  if (outline) { ctx.strokeStyle = C(outline, a); ctx.lineWidth = Math.max(0.5, w); ctx.stroke(); }
+}
+function rrPath(x0, y0, x1, y1, r) {
+  r = Math.min(r, (x1 - x0) / 2, (y1 - y0) / 2);
+  ctx.beginPath();
+  ctx.moveTo(x0 + r, y0); ctx.arcTo(x1, y0, x1, y1, r); ctx.arcTo(x1, y1, x0, y1, r);
+  ctx.arcTo(x0, y1, x0, y0, r); ctx.arcTo(x0, y0, x1, y0, r); ctx.closePath();
+}
+function rrect(x0, y0, x1, y1, r, fill = null, a = 1, outline = null, w = 0) {
+  if (a <= 0.01) return;
+  rrPath(x0, y0, x1, y1, r);
+  if (fill) { ctx.fillStyle = C(fill, a); ctx.fill(); }
+  if (outline) { ctx.strokeStyle = C(outline, a); ctx.lineWidth = w; ctx.stroke(); }
+}
+function line(pts, col, w, a = 1) {
+  if (a <= 0.01 || pts.length < 2) return;
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.strokeStyle = C(col, a); ctx.lineWidth = w; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke();
+}
+function poly(pts, fill, a = 1, outline = null) {
+  if (a <= 0.01) return;
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.closePath(); ctx.fillStyle = C(fill, a); ctx.fill();
+  if (outline) { ctx.strokeStyle = C(outline, a); ctx.lineWidth = 1; ctx.stroke(); }
+}
+function txt(x, y, s, size, w = 'Regular', col = TEXT, a = 1, anchor = 'la') {
+  if (a <= 0.01) return;
+  ctx.font = F(size, w); ctx.fillStyle = C(col, a);
+  ctx.textAlign = { l: 'left', m: 'center', r: 'right' }[anchor[0]];
+  ctx.textBaseline = { a: 'top', m: 'middle', s: 'alphabetic' }[anchor[1]];
+  ctx.fillText(s, x, y);
+}
+function tlen(s, size, w = 'Regular') { ctx.font = F(size, w); return ctx.measureText(s).width; }
+function wrap(s, size, maxw, w = 'Regular') {
+  const out = [];
+  for (const para of s.split('\n')) {
+    let cur = '';
+    for (const wd of para.split(' ')) {
+      const test = (cur + ' ' + wd).trim();
+      if (tlen(test, size, w) <= maxw) cur = test; else { out.push(cur); cur = wd; }
+    }
+    out.push(cur);
+  }
+  return out;
+}
+
+// ============================================================ particles
+function electron(x, y, a = 1, r = 8) {
+  circ(x, y, r, E_COL, a, E_LINE, 1.2);
+  line([[x - r * .45, y], [x + r * .45, y]], WHITE, Math.max(1.6, r * .22), a);
+}
+function proton(x, y, a = 1, r = 8.5) {
+  circ(x, y, r, P_COL, a, P_LINE, 1.2);
+  const k = r * .45, w = Math.max(1.6, r * .22);
+  line([[x - k, y], [x + k, y]], WHITE, w, a); line([[x, y - k], [x, y + k]], WHITE, w, a);
+}
+function sugar(x, y, a = 1, r = 5) {
+  const pts = [];
+  for (let i = 0; i < 6; i++) pts.push([x + r * Math.cos(Math.PI / 3 * i + Math.PI / 6), y + r * Math.sin(Math.PI / 3 * i + Math.PI / 6)]);
+  poly(pts, SUGAR, a, SUGAR_LINE);
+}
+function co2(x, y, a = 1, k = 1) {
+  circ(x - 7 * k, y, 4.2 * k, CO2_O, a, CO2_LINE, 1); circ(x + 7 * k, y, 4.2 * k, CO2_O, a, CO2_LINE, 1);
+  circ(x, y, 5 * k, CO2_C, a, CO2_LINE, 1);
+}
+function o2(x, y, a = 1, k = 1) {
+  circ(x - 4.5 * k, y, 5.5 * k, O2_COL, a, O2_LINE, 1.3); circ(x + 4.5 * k, y, 5.5 * k, O2_COL, a, O2_LINE, 1.3);
+}
+function water(x, y, a = 1, k = 1) {
+  const r = 6 * k;
+  poly([[x - r * .92, y + 1], [x, y - 2.4 * r], [x + r * .92, y + 1]], WATER, a);
+  circ(x, y + 2, r, WATER, a);
+  circ(x - r * .35, y + .5, r * .28, [235, 248, 255], a);
+}
+function bacterium(cx, cy, a = 1, sc = 1, t = 0, face = 1, seed = 0) {
+  if (a <= 0.01) return;
+  const L = 34 * sc, Hh = 16 * sc, pts = [];
+  for (let j = 0; j < 14; j++) {
+    const u = j / 13;
+    pts.push([cx - face * (L / 2 + u * 15 * sc), cy + 2.6 * sc * Math.sin(u * 3 * Math.PI + t * 9 + seed)]);
+  }
+  line(pts, BACT_LINE, Math.max(1, 1.3 * sc ** .7), a);
+  rrect(cx - L / 2, cy - Hh / 2, cx + L / 2, cy + Hh / 2, Hh / 2, BACT, a, BACT_LINE, Math.max(1, 1.4 * sc ** .6));
+  circ(cx - L * .14, cy - Hh * .08, 1.5 * sc, BACT_LINE, a);
+  circ(cx + L * .2, cy + Hh * .12, 1.2 * sc, BACT_LINE, a);
+  circ(cx + L * .02, cy + Hh * .18, .9 * sc, BACT_LINE, a);
+}
+function lamp(x, y, bright = 0, a = 1, r = 20) {
+  if (a <= 0.01) return;
+  if (bright > 0.01) {
+    for (let i = 6; i > 0; i--) circ(x, y, r + i * 9 * bright, [255, 225, 90], a * .09 * bright);
+    for (let k = 0; k < 10; k++) {
+      const ang = k * Math.PI / 5;
+      if (Math.sin(ang) < .6) {
+        const p = [x + Math.cos(ang) * (r + 8), y + Math.sin(ang) * (r + 8)];
+        const q = [x + Math.cos(ang) * (r + 8 + 14 * bright), y + Math.sin(ang) * (r + 8 + 14 * bright)];
+        line([p, q], [240, 180, 30], 2.5, a * bright);
+      }
+    }
+  }
+  circ(x, y, r, [lerp(235, 255, bright), lerp(240, 220, bright), lerp(245, 90, bright)], a, [110, 110, 118], 2);
+  line([[x - 6, y + r * .85], [x - 6, y], [x - 3, y - 6], [x, y], [x + 3, y - 6], [x + 6, y], [x + 6, y + r * .85]],
+       [lerp(120, 200, bright), lerp(120, 110, bright), lerp(120, 20, bright)], 1.8, a);
+  rrect(x - r * .55, y + r * .8, x + r * .55, y + r * 1.35, 3, [150, 150, 158], a, [100, 100, 108], 1.2);
+  line([[x - r * .55, y + r], [x + r * .55, y + r]], [110, 110, 118], 1, a);
+}
+function sun(x, y, a = 1, t = 0, r = 30) {
+  if (a <= 0.01) return;
+  for (let k = 0; k < 12; k++) {
+    const ang = k * Math.PI / 6 + t * .25, ln = 12 + 3 * Math.sin(t * 3 + k);
+    line([[x + Math.cos(ang) * (r + 6), y + Math.sin(ang) * (r + 6)], [x + Math.cos(ang) * (r + 6 + ln), y + Math.sin(ang) * (r + 6 + ln)]],
+         [245, 175, 30], 3.5, a);
+  }
+  circ(x, y, r + 6, [255, 220, 100], a * .35);
+  circ(x, y, r, [255, 205, 60], a, [235, 160, 20], 2);
+}
+
+// ============================================================ paths
+class Path {
+  constructor(pts) {
+    this.pts = pts; this.cum = [0];
+    for (let i = 1; i < pts.length; i++) this.cum.push(this.cum[i - 1] + dist(pts[i - 1], pts[i]));
+    this.L = this.cum[this.cum.length - 1];
+  }
+  atLen(s) {
+    s = clamp(s, 0, this.L);
+    for (let i = 1; i < this.pts.length; i++) if (this.cum[i] >= s) {
+      const seg = this.cum[i] - this.cum[i - 1], u = seg === 0 ? 0 : (s - this.cum[i - 1]) / seg;
+      return lerp2(this.pts[i - 1], this.pts[i], u);
+    }
+    return this.pts[this.pts.length - 1];
+  }
+  at(u) { return this.atLen(u * this.L); }
+  sub(u) {
+    const s = u * this.L, out = [this.pts[0]];
+    for (let i = 1; i < this.pts.length; i++) {
+      if (this.cum[i] <= s) out.push(this.pts[i]); else { out.push(this.atLen(s)); break; }
+    }
+    return out;
+  }
+}
+const bez = (p0, p1, p2, u) => [(1 - u) ** 2 * p0[0] + 2 * (1 - u) * u * p1[0] + u * u * p2[0],
+                                (1 - u) ** 2 * p0[1] + 2 * (1 - u) * u * p1[1] + u * u * p2[1]];
+
+// emissions: particles emitted every `interval` seconds since stream start; st = stream time
+function emit(st, interval, dur, cb) {
+  if (st === null || st < 0) return;
+  const kmax = Math.floor(st / interval), kmin = Math.max(0, Math.floor((st - dur) / interval));
+  for (let k = kmin; k <= kmax; k++) { const u = (st - k * interval) / dur; if (u >= 0 && u <= 1) cb(k, u); }
+}
+const fadeEnds = (u, fi = .12, fo = .15) => clamp(Math.min(fi ? u / fi : 1, fo ? (1 - u) / fo : 1));
+
+// ============================================================ timeline
+const SCENES = [['title', 7], ['foto', 15], ['zoom', 16], ['aufbau', 20], ['s1', 11], ['s2', 12],
+  ['s3', 11], ['s4', 11], ['s5', 12], ['kreis', 14], ['nutzen', 17], ['merke', 13]];
+const START = {}, DUR = {};
+let TOTAL = 0;
+for (const [n, d] of SCENES) { START[n] = TOTAL; DUR[n] = d; TOTAL += d; }
+
+// streams: start in script time (G); their particles run on world time (W)
+const STREAMS = {
+  co2in: START.foto + 1.6, o2out: START.foto + 3.2, sugar: START.foto + 7.6,
+  zoom: START.zoom, eat: START.s2 + .3, wire: START.s3 + .5, p: START.s4 + .3,
+  o: START.s5 + .3, cyc: START.kreis + 7,
+};
+
+// ============================================================ geometry
+const C_X0 = 170, C_X1 = 880, C_Y0 = 300, C_Y1 = 565, SOIL_Y = 338, CX = 525;
+const ANODE = [210, 468, 840, 486];
+const CATH_Y = [313, 325], CATH_L = [210, 495], CATH_R = [555, 840];
+const WIRE_PTS = [[210, 477], [100, 477], [100, 215], [190, 215], [190, 319], [210, 319]];
+const LAMP = [145, 194], SUNP = [840, 128];
+
+const ROOTS = (() => {
+  const rng = Rng(11), roots = [];
+  for (const ang0 of [-68, -50, -32, -15, 0, 15, 32, 50, 68]) {
+    let x = CX + rng.uniform(-8, 8), y = SOIL_Y + 2;
+    const pts = [[x, y]];
+    let a = (ang0 + rng.uniform(-5, 5)) * Math.PI / 180;
+    const n = 8, L = rng.uniform(190, 230);
+    for (let j = 0; j < n; j++) {
+      const seg = L / n;
+      a += rng.uniform(-.22, .22); a *= .93;
+      x += Math.sin(a) * seg * 1.55; y += Math.cos(a) * seg;
+      x = clamp(x, C_X0 + 25, C_X1 - 25); y = clamp(y, SOIL_Y, C_Y1 - 14);
+      pts.push([x, y]);
+    }
+    roots.push([pts, 4.2]);
+    for (const bi of [3, 5]) {
+      let [bx, by] = pts[bi];
+      let ba = a + rng.choice([-1, 1]) * rng.uniform(.6, 1.0);
+      const bp = [[bx, by]];
+      for (let j = 0; j < 4; j++) {
+        ba += rng.uniform(-.3, .3); bx += Math.sin(ba) * 13; by += Math.abs(Math.cos(ba)) * 13;
+        bp.push([clamp(bx, C_X0 + 20, C_X1 - 20), clamp(by, SOIL_Y, C_Y1 - 12)]);
+      }
+      roots.push([bp, 2.2]);
+    }
+  }
+  return roots;
+})();
+const MAIN_ROOTS = ROOTS.filter(r => r[1] > 3).map(r => new Path(r[0]));
+
+const BLADES = (() => {
+  const r = Rng(5), out = [];
+  for (let i = 0; i < 11; i++) {
+    out.push({ base: [CX + (i - 5) * 6 + r.uniform(-3, 3), SOIL_Y], lean: (i - 5) * 13 + r.uniform(-10, 10),
+      h: r.uniform(170, 235) - Math.abs(i - 5) * 6, w: r.uniform(7, 10),
+      col: [r.uniform(70, 110), r.uniform(150, 185), r.uniform(60, 85)], ph: r.uniform(0, 6) });
+  }
+  return out;
+})();
+function bladePt(b, w, u) {
+  const [bx, by] = b.base, sway = 4 * Math.sin(w * 1.1 + b.ph);
+  return bez([bx, by], [bx + b.lean * .2, by - b.h * .65], [bx + b.lean * 1.6 + sway, by - b.h], u);
+}
+function drawBlade(b, w, a) {
+  const n = 18, left = [], right = [];
+  for (let j = 0; j <= n; j++) {
+    const u = j / n, p = bladePt(b, w, u), q = bladePt(b, w, Math.min(1, u + .01));
+    const dx = q[0] - p[0], dy = q[1] - p[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l;
+    const ww = b.w * .5 * (1 - u) ** .8 + .4;
+    left.push([p[0] + nx * ww, p[1] + ny * ww]); right.push([p[0] - nx * ww, p[1] - ny * ww]);
+  }
+  poly(left.concat(right.reverse()), b.col, a);
+  const mid = []; for (let j = 0; j < n - 2; j++) mid.push(bladePt(b, w, j / n));
+  line(mid, [Math.min(255, b.col[0] + 40), Math.min(255, b.col[1] + 40), Math.min(255, b.col[2] + 30)], 1.2, a * .7);
+}
+
+const BACTS = [[250, 459, 1], [318, 459, -1], [385, 459, 1], [448, 459, -1], [612, 459, 1], [680, 459, -1], [745, 459, 1], [808, 459, -1]];
+const FLOAT_BACT = [[290, 410], [470, 395], [640, 420], [760, 400], [360, 520], [700, 525], [540, 510]];
+const SOIL_DOTS = (() => { const r = Rng(3), o = []; for (let i = 0; i < 260; i++) o.push([r.uniform(C_X0 + 8, C_X1 - 8), r.uniform(SOIL_Y + 6, C_Y1 - 6), r.uniform(1.2, 3.2)]); return o; })();
+const FOOD_SRC = BACTS.map(([x, y]) => {
+  let best = [x, y - 60], bd = 1e9;
+  for (const p of MAIN_ROOTS) for (let k = 0; k < 40; k++) {
+    const q = p.at(k / 39), dd = dist(q, [x, y]);
+    if (q[1] < y - 25 && dd < bd) { bd = dd; best = q; }
+  }
+  return best;
+});
+function sugarPath(i, w) {
+  const b = BLADES[(i * 4 + 1) % BLADES.length];
+  const pts = [.62, .45, .3, .15, 0].map(u => bladePt(b, w, u));
+  const root = MAIN_ROOTS[i % MAIN_ROOTS.length];
+  for (let k = 1; k <= 10; k++) pts.push(root.at(k / 10));
+  return new Path(pts);
+}
+
+const ELEC_SPEED = 165;
+const _ep = new Map();
+function elecPath(k) {
+  if (!_ep.has(k)) {
+    const r = Rng(1000 + k), sx = k === 0 ? 245 : r.uniform(240, 820), ex = r.uniform(235, 830);
+    _ep.set(k, new Path([[sx, 477], ...WIRE_PTS, [ex, 319]]));
+    if (_ep.size > 400) _ep.delete(_ep.keys().next().value);
+  }
+  return _ep.get(k);
+}
+const LAMP_DT = ((245 - 210) + 110 + (477 - 215) + 45) / ELEC_SPEED;
+
+// ============================================================ state (script time G, world time Wt)
+let G = 0, Wt = 0;
+const anchors = {};
+function updateAnchors() {
+  for (const k in STREAMS) {
+    if (G >= STREAMS[k]) { if (anchors[k] === undefined) anchors[k] = Wt - (G - STREAMS[k]); }
+    else delete anchors[k];
+  }
+}
+function resetAnchors() { for (const k in anchors) delete anchors[k]; updateAnchors(); }
+const ST = k => anchors[k] === undefined ? null : Wt - anchors[k];
+
+function lampBright() {
+  const s = ST('wire');
+  if (s === null) return 0;
+  return ease(prog(s, LAMP_DT, LAMP_DT + .5)) * (.92 + .08 * Math.sin(Wt * 7));
+}
+
+// ============================================================ diagram
+function drawDiagram(st) {
+  const g = (k, d = 1) => st[k] === undefined ? d : st[k];
+  const w = Wt;
+  // sun + rays
+  const sa = g('sun');
+  if (sa > .01) {
+    sun(SUNP[0], SUNP[1], sa, w);
+    const ra = sa * g('rays');
+    if (ra > .01) [[600, 160], [560, 200], [640, 210]].forEach((tgt, j) => {
+      const p0 = [SUNP[0] - 34, SUNP[1] + 18 + j * 6];
+      for (let s = 0; s < 7; s++) {
+        const u0 = ((s / 7) + w * .35) % 1, u1 = Math.min(1, u0 + .07);
+        line([lerp2(p0, tgt, u0), lerp2(p0, tgt, u1)], [245, 185, 40], 2.5, ra * .85 * bump(u0, 0, 1));
+      }
+    });
+  }
+  // container, water, soil
+  const ga = g('glass');
+  rrect(C_X0, C_Y0, C_X1, C_Y1, 14, [232, 240, 246], ga * .6);
+  rrect(C_X0 + 3, C_Y0 + 3, C_X1 - 3, SOIL_Y + 8, 12, WATER_LAYER, ga);
+  ctx.fillStyle = C(SOIL, ga); ctx.fillRect(C_X0 + 3, SOIL_Y, C_X1 - C_X0 - 6, C_Y1 - 12 - SOIL_Y);
+  rrect(C_X0 + 3, C_Y1 - 30, C_X1 - 3, C_Y1 - 3, 12, SOIL, ga);
+  for (const [x, y, r] of SOIL_DOTS) circ(x, y, r, SOIL_DOT, ga * .8);
+  line([[C_X0 + 3, SOIL_Y], [C_X1 - 3, SOIL_Y]], [115, 85, 55], 2, ga);
+  // roots
+  const pa = g('plant');
+  for (const [pts, rw] of ROOTS) { line(pts, [200, 178, 132], rw + 1.6, pa); line(pts, ROOT, rw, pa); }
+  // anode
+  const an = g('anode');
+  rrect(...ANODE, 3, GRAPHITE, an);
+  for (let x = ANODE[0] + 8; x < ANODE[2] - 4; x += 14) line([[x, ANODE[1] + 4], [x + 6, ANODE[3] - 4]], [80, 84, 94], 1, an);
+  // cathode
+  const cn = g('cathode');
+  rrect(CATH_L[0], CATH_Y[0], CATH_L[1], CATH_Y[1], 3, GRAPHITE, cn);
+  rrect(CATH_R[0], CATH_Y[0], CATH_R[1], CATH_Y[1], 3, GRAPHITE, cn);
+  line([[CATH_L[1], 323], [CATH_R[0], 323]], WIRE, 2.5, cn);
+  // plant
+  for (const b of BLADES) drawBlade(b, w, pa);
+  // floating bacteria
+  const ba = g('bact');
+  FLOAT_BACT.forEach(([x, y], i) => bacterium(x + 10 * Math.sin(w * .35 + i), y + 6 * Math.sin(w * .5 + i * 2), ba * .9, .75, w, i % 2 ? 1 : -1, i));
+
+  // photosynthesis: CO2 in, O2 out
+  emit(ST('co2in'), .9, 3.0, (k, u) => {
+    const r = Rng(50 + k), side = k % 2 ? -1 : 1;
+    const p0 = [CX + side * r.uniform(240, 330), r.uniform(130, 250)];
+    const b = BLADES[r.randrange(BLADES.length)], p1 = bladePt(b, w, r.uniform(.5, .8));
+    co2(...lerp2(p0, p1, ease(u)), fadeEnds(u, .15, .2), .9);
+  });
+  emit(ST('o2out'), 1.1, 3.0, (k, u) => {
+    const r = Rng(90 + k), b = BLADES[r.randrange(BLADES.length)];
+    const p0 = bladePt(b, w, r.uniform(.55, .85)), side = k % 2 ? -1 : 1;
+    const p1 = [p0[0] + side * r.uniform(120, 200), p0[1] - r.uniform(30, 70)];
+    o2(...lerp2(p0, p1, ease(u)), fadeEnds(u, .15, .3), .9);
+  });
+  // sugar transport + exudates
+  const ss = ST('sugar');
+  emit(ss, .42, 3.6, (k, u) => sugar(...sugarPath(k % 9, w).at(u), fadeEnds(u, .1, .05), 4.2));
+  emit(ss === null ? null : ss - 3.3, .42, 3.0, (k, u) => {
+    const p = sugarPath(k % 9, w).pts.at(-1), r = Rng(300 + k);
+    const q = [p[0] + r.uniform(-28, 28), Math.min(p[1] + r.uniform(-10, 22), C_Y1 - 14)];
+    sugar(...lerp2(p, q, ease(Math.min(1, u * 2))), fadeEnds(u, .05, .4), 4.2);
+  });
+  // ambient O2 above water
+  const oa = g('air');
+  if (oa > .01) [215, 290, 365, 435, 650, 715, 785, 850].forEach((x0, i) =>
+    o2(x0 + 8 * Math.sin(w * .6 + i), 250 + 7 * Math.sin(w * .8 + i * 1.7), oa * .9, .85));
+
+  // bacteria on anode, eating
+  const lh = 1 - prog(G, START.s4, START.s4 + 1);
+  const se = ST('eat');
+  BACTS.forEach(([bx, by, face], i) => {
+    const P = 3.0, off = i * .37;
+    let pulse = 0;
+    if (se !== null && se >= off) {
+      const kmax = Math.floor((se - off) / P);
+      for (const k of [kmax - 1, kmax]) {
+        if (k < 0) continue;
+        const u = se - off - k * P, r = Rng(i * 977 + k);
+        const src = [FOOD_SRC[i][0] + r.uniform(-15, 15), FOOD_SRC[i][1] + r.uniform(-5, 5)];
+        if (u < 1.1) sugar(...lerp2(src, [bx, by - 4], ease(u / 1.1)), clamp(u / .2), 4.2);
+        pulse = Math.max(pulse, bump(u, .95, 1.4));
+        if (u >= 1.15 && u < 1.75) { const v = (u - 1.15) / .6; electron(bx, lerp(by, 477, ease(v)), 1 - prog(v, .7, 1), 6); }
+        if (u >= 1.15 && u < 2.3 && lh > .01) { const v = (u - 1.15) / 1.15; proton(bx + face * 18 * ease(v), by - 30 * ease(v), lh * fadeEnds(v, .15, .4), 6.5); }
+        if (u >= 1.15 && u < 4.2) {
+          const v = (u - 1.15) / 3.05;
+          co2(bx + 8 * Math.sin(v * 9 + i), lerp(by - 10, SOIL_Y - 30, ease(v)), fadeEnds(v, .08, .25), .8);
+        }
+      }
+    }
+    bacterium(bx, by, ba, .8 * (1 + .18 * pulse), w, face, i);
+  });
+  // CO2 back into plant
+  emit(ST('cyc'), .8, 2.6, (k, u) => {
+    const r = Rng(700 + k), p0 = [r.uniform(300, 760), SOIL_Y - 30];
+    const b = BLADES[r.randrange(BLADES.length)], p1 = bladePt(b, w, r.uniform(.35, .7));
+    co2(...lerp2(p0, p1, ease(u)), fadeEnds(u, .15, .2), .8);
+  });
+  // wire + lamp
+  const wp = g('wire');
+  if (wp > .001) { const pth = new Path(WIRE_PTS).sub(wp); line(pth, [60, 60, 66], 6); line(pth, [190, 120, 60], 3.2); }
+  lamp(LAMP[0], LAMP[1], g('lampon') ? lampBright() : 0, g('lamp'), 19);
+  // electrons in wire
+  const sw = ST('wire');
+  if (sw !== null) {
+    const kmax = Math.floor(sw / .3);
+    for (let k = Math.max(0, kmax - 60); k <= kmax; k++) {
+      const p = elecPath(k), u = (sw - k * .3) / (p.L / ELEC_SPEED);
+      if (u >= 0 && u <= 1) electron(...p.at(u), fadeEnds(u, .03, .06), 6.5);
+    }
+  }
+  // protons rising
+  emit(ST('p'), .42, 3.4, (k, u) => {
+    const r = Rng(400 + k), x0 = r.uniform(240, 820), x1 = x0 + r.uniform(-25, 25);
+    proton(lerp(x0, x1, u) + 6 * Math.sin(u * 10 + k), lerp(462, 331, ease(u)), fadeEnds(u, .1, .1), 7);
+  });
+  // O2 to cathode -> water
+  const so = ST('o');
+  const oxX = k => { const r = Rng(500 + k); let x = r.uniform(235, 830); if (x > 480 && x < 570) x += 110; return [x, r]; };
+  emit(so, .65, 2.0, (k, u) => { const [x] = oxX(k); o2(x, lerp(250, 309, ease(u)), fadeEnds(u, .15, .08), .9); });
+  emit(so === null ? null : so - 2.0, .65, 2.2, (k, u) => {
+    const [x, r] = oxX(k);
+    if (u < .25) circ(x, 316, 6 + 26 * u / .25, null, 1 - u / .25, WHITE, 2);
+    const dx = r.choice([-1, 1]) * 30;
+    water(x + dx * ease(u), 318 + 12 * ease(u) - 6 * bump(u, 0, 1), fadeEnds(u, .1, .35), .9);
+  });
+  // glass outline
+  rrect(C_X0, C_Y0, C_X1, C_Y1, 14, null, ga, [120, 140, 160], 3);
+  // labels
+  const la = g('labels');
+  txt(890, 319, 'Kathode (+)', 17, 'SemiBold', TEXT, la * g('cathode'), 'lm');
+  txt(890, 477, 'Anode (−)', 17, 'SemiBold', TEXT, la * g('anode'), 'lm');
+  txt(LAMP[0], LAMP[1] - 46, 'Lampe (LED)', 16, 'SemiBold', TEXT, la * g('lamp'), 'mm');
+  txt(C_X0 + 16, C_Y1 - 14, 'nasser Boden – fast ohne Sauerstoff', 15, 'SemiBold', [250, 240, 225], la * ga * g('soillabel'), 'ls');
+  txt(C_X0 + 34, C_Y0 - 8, 'Wasserschicht – Sauerstoff aus der Luft', 15, 'SemiBold', [60, 110, 150], la * g('waterlabel'), 'ls');
+  txt(SUNP[0], SUNP[1] + 58, 'Sonnenlicht', 16, 'SemiBold', [190, 120, 10], la * sa * g('sunlabel'), 'mm');
+  // highlights
+  for (const [x0, y0, x1, y1, a] of g('hl', [])) if (a > .01) rrect(x0, y0, x1, y1, 12, null, a * (.65 + .35 * Math.sin(w * 5)), ACCENT, 3.5);
+  drawLegend(legendAlphas());
+}
+
+const LEGEND = [['co2', 'Kohlenstoffdioxid (CO₂)'], ['o2', 'Sauerstoff (O₂)'], ['sugar', 'Zucker'], ['bact', 'Bakterium'],
+  ['e', 'Elektron (e⁻)'], ['h', 'Proton (H⁺)'], ['water', 'Wasser (H₂O)']];
+function legendAlphas() {
+  const ap = t0 => ease(prog(G, t0, t0 + .6));
+  return { co2: ap(STREAMS.co2in), o2: ap(STREAMS.o2out), sugar: ap(STREAMS.sugar), bact: ap(START.aufbau + 5.5),
+           e: ap(START.s2 + .5), h: ap(START.s2 + .5), water: ap(START.s5 + 2) };
+}
+function drawLegend(al) {
+  const pa = Math.max(...Object.values(al));
+  if (pa <= .01) return;
+  const x0 = 1000, y0 = 110, x1 = 1262;
+  rrect(x0, y0, x1, y0 + 62 + 46 * LEGEND.length, 14, WHITE, pa, [220, 214, 202], 1.5);
+  txt(x0 + 18, y0 + 32, 'Legende', 19, 'Bold', TEXT, pa, 'lm');
+  LEGEND.forEach(([key, label], i) => {
+    const a = al[key] || 0, y = y0 + 76 + i * 46, ix = x0 + 34;
+    ({ sugar: () => sugar(ix, y, a, 7), bact: () => bacterium(ix + 4, y, a, .7, 0, 1), e: () => electron(ix, y, a, 9),
+       h: () => proton(ix, y, a, 9), co2: () => co2(ix, y, a, 1.1), o2: () => o2(ix, y, a, 1.1), water: () => water(ix, y + 2, a, 1.1) })[key]();
+    let size = 17;
+    while (tlen(label, size, 'Medium') > x1 - (ix + 26) - 10 && size > 12) size -= .5;
+    txt(ix + 26, y, label, size, 'Medium', TEXT, a, 'lm');
+  });
+}
+
+// ============================================================ overlays
+function heading(badge, title, a = 1, col = ACCENT) {
+  const bw = tlen(badge, 18, 'Bold') + 28;
+  rrect(40, 22, 40 + bw, 58, 18, col, a);
+  txt(40 + bw / 2, 40, badge, 18, 'Bold', WHITE, a, 'mm');
+  txt(40 + bw + 16, 40, title, 28, 'Bold', TEXT, a, 'lm');
+}
+function captionBox(t, caps) {
+  rrect(40, 590, 1240, 704, 16, WHITE, 1, [220, 214, 202], 1.5);
+  for (const [t0, t1, s] of caps) {
+    const a = ease(prog(t, t0, t0 + .35)) * (1 - ease(prog(t, t1 - .3, t1)));
+    if (a <= .01) continue;
+    let size = 25, lines = wrap(s, size, 1120, 'Medium');
+    while (lines.length > 2 && size > 19) { size -= 1; lines = wrap(s, size, 1120, 'Medium'); }
+    const lh = size * 1.38, y = 647 - lh * (lines.length - 1) / 2;
+    lines.forEach((ln, i) => txt(66, y + i * lh, ln, size, 'Medium', TEXT, a, 'lm'));
+  }
+}
+
+// ============================================================ content
+const CAPS = {
+  foto: [[0, 7.5, 'Pflanzen stellen aus Sonnenlicht, Wasser und Kohlenstoffdioxid (CO₂) Zucker her. Dabei geben sie Sauerstoff (O₂) ab. Das ist die Fotosynthese.'],
+         [7.5, 15, 'Einen Teil des Zuckers schickt die Pflanze in ihre Wurzeln. Von dort gelangt er in den Boden – man nennt das Wurzelausscheidungen.']],
+  zoom: [[0, 5, 'Rund um die Wurzeln leben im Boden unzählige winzige Bakterien.'],
+         [5, 10.5, 'Sie ernähren sich von den Wurzelausscheidungen. Beim Abbau des Zuckers werden Elektronen (e⁻) frei – winzige, negativ geladene Teilchen.'],
+         [10.5, 16, 'Bestimmte Bakterien können diese Elektronen nach außen abgeben – zum Beispiel an eine Elektrode aus Graphit. Diese nennt man Anode.']],
+  aufbau: [[0, 5, 'So ist eine Pflanzen-Brennstoffzelle aufgebaut: Die Pflanze wächst in einem Gefäß mit nassem Boden – wie in einem Sumpf oder Reisfeld.'],
+           [5, 10, 'Unten zwischen den Wurzeln liegt die Anode (−) aus Graphit. Im nassen Boden gibt es dort kaum Sauerstoff.'],
+           [10, 15, 'Oben in der Wasserschicht liegt die Kathode (+). Dorthin gelangt Sauerstoff aus der Luft.'],
+           [15, 20, 'Ein Draht verbindet Anode und Kathode. Dazwischen hängt eine Lampe (LED) als Verbraucher.']],
+  s1: [[0, 5.5, 'Die Pflanze betreibt Fotosynthese und gibt ständig Zucker über ihre Wurzeln in den Boden ab.'],
+       [5.5, 11, 'So bekommen die Bakterien an der Anode immer wieder neues Futter – solange die Pflanze lebt und wächst.']],
+  s2: [[0, 6, 'Die Bakterien an der Anode zerlegen den Zucker. Dabei entstehen Elektronen (e⁻), Protonen (H⁺) und Kohlenstoffdioxid (CO₂).'],
+       [6, 12, 'Weil unten im nassen Boden kaum Sauerstoff ist, geben die Bakterien ihre Elektronen an die Anode ab.']],
+  s3: [[0, 5.5, 'Die Elektronen fließen von der Anode (Minuspol) durch den Draht zur Kathode (Pluspol).'],
+       [5.5, 11, 'Fließende Elektronen sind elektrischer Strom – die Lampe leuchtet!']],
+  s4: [[0, 5.5, 'Die Protonen (H⁺) wandern durch den nassen Boden nach oben zur Kathode.'],
+       [5.5, 11, 'Das Wasser im Boden leitet sie weiter. So ist der Stromkreis geschlossen.']],
+  s5: [[0, 6, 'An der Kathode treffen Elektronen, Protonen und Sauerstoff aus der Luft aufeinander.'],
+       [6, 12, 'Sie reagieren zu Wasser:   4 e⁻  +  4 H⁺  +  O₂   →   2 H₂O']],
+  kreis: [[0, 7, 'Alles läuft gleichzeitig: Die Pflanze liefert Zucker, die Bakterien liefern Elektronen – und die Lampe leuchtet, sogar nachts.'],
+          [7, 14, 'Das CO₂ aus dem Boden nimmt die Pflanze wieder auf. Und das Beste: Sie wird nicht geerntet, sondern wächst ganz normal weiter.']],
+  nutzen: [[0, 8.5, 'Pflanzen-Brennstoffzellen werden z. B. an der Universität Wageningen (Niederlande) erforscht. Sie haben Stärken und Schwächen.'],
+           [8.5, 17, 'Zum Vergleich: Ein Solarmodul liefert in voller Sonne etwa 200 Watt pro Quadratmeter – rund 500-mal so viel.']],
+};
+const HEAD = {
+  foto: ['Die Pflanze', 'Fotosynthese: Die Pflanze macht Zucker'], zoom: ['Im Boden', 'Bakterien an den Wurzeln'],
+  aufbau: ['Aufbau', 'So ist die Pflanzen-Brennstoffzelle aufgebaut'], s1: ['Schritt 1', 'Die Pflanze liefert das Futter'],
+  s2: ['Schritt 2', 'Bakterien zerlegen den Zucker'], s3: ['Schritt 3', 'Elektronen fließen – die Lampe leuchtet'],
+  s4: ['Schritt 4', 'Protonen wandern nach oben'], s5: ['Schritt 5', 'An der Kathode entsteht Wasser'],
+  kreis: ['Überblick', 'Ein Kreislauf'], nutzen: ['Anwendung', 'Wofür kann man das nutzen?'], merke: ['Merke', 'Das Wichtigste in Kürze'],
+};
+
+function diagramState(name, t) {
+  const st = { hl: [] };
+  if (name === 'foto') {
+    Object.assign(st, { anode: 0, cathode: 0, wire: 0, lamp: 0, air: 0, bact: 0, soillabel: 0, waterlabel: 0,
+      sun: ease(prog(t, .3, 1)), rays: ease(prog(t, .8, 1.5)), sunlabel: ease(prog(t, 1, 1.6)) * (1 - prog(t, 13, 14)) });
+    st.hl = [[CX - 160, 80, CX + 160, SOIL_Y - 2, ease(prog(t, 1.5, 2)) * (1 - prog(t, 7, 7.5))],
+             [C_X0 + 10, SOIL_Y + 4, C_X1 - 10, C_Y1 - 8, ease(prog(t, 9, 9.5)) * (1 - prog(t, 14.4, 15))]];
+  } else if (name === 'aufbau') {
+    Object.assign(st, { sunlabel: 0, soillabel: ease(prog(t, 1, 1.8)), bact: ease(prog(t, 5.5, 6.3)), anode: ease(prog(t, 5.3, 6)),
+      cathode: ease(prog(t, 10.3, 11)), air: ease(prog(t, 10.6, 11.4)), waterlabel: ease(prog(t, 10.8, 11.5)),
+      wire: ease(prog(t, 15.4, 16.8)), lamp: ease(prog(t, 16.2, 16.8)), lampon: 0 });
+    st.hl = [[C_X0 + 6, SOIL_Y + 2, C_X1 - 6, C_Y1 - 4, ease(prog(t, .6, 1.1)) * (1 - prog(t, 4.6, 5))],
+             [ANODE[0] - 14, 440, ANODE[2] + 14, 500, ease(prog(t, 6, 6.5)) * (1 - prog(t, 9.6, 10))],
+             [CATH_L[0] - 14, 300, CATH_R[1] + 14, 337, ease(prog(t, 11, 11.5)) * (1 - prog(t, 14.6, 15))],
+             [80, 125, 215, 500, ease(prog(t, 16.8, 17.3)) * (1 - prog(t, 19.6, 20))]];
+  } else {
+    st.sunlabel = 0;
+    const hl = { s1: [[CX - 300, 337, CX + 300, 560]], s2: [[ANODE[0] - 14, 440, ANODE[2] + 14, 500]], s3: [[80, 125, 215, 500]],
+                 s4: [[ANODE[0] - 14, 330, ANODE[2] + 14, 470]], s5: [[CATH_L[0] - 14, 245, CATH_R[1] + 14, 340]] }[name] || [];
+    const f = ease(prog(t, .3, .8)) * (1 - ease(prog(t, DUR[name] - .4, DUR[name])));
+    st.hl = hl.map(r => [...r, f]);
+  }
+  return st;
+}
+
+function sceneTitle(t) {
+  const w = Wt;
+  [[160, 160], [1100, 140], [220, 560], [1050, 560], [640, 610], [90, 380], [1190, 360]].forEach(([x, y], i) =>
+    bacterium(x + 14 * Math.sin(w * .5 + i), y + 9 * Math.sin(w * .7 + i * 2), .35 * ease(prog(t, .2, 1.2)), 1.6, w, i % 2 ? 1 : -1, i));
+  const a1 = ease(prog(t, .5, 1.3)), gx = 560, gy = 260;
+  for (let i = 0; i < 7; i++) drawBlade({ base: [gx + (i - 3) * 4, gy], lean: (i - 3) * 8, h: 90 - Math.abs(i - 3) * 8, w: 7, col: [80 + i * 5, 165, 75], ph: i }, w, a1);
+  rrect(gx - 45, gy, gx + 45, gy + 34, 6, [175, 120, 75], a1, [130, 85, 50], 1.5);
+  line([[gx + 45, gy + 17], [720, gy + 17], [720, 246]], WIRE, 3, a1);
+  lamp(720, 216, ease(prog(t, 2.4, 3)) * (.92 + .08 * Math.sin(w * 7)), a1, 24);
+  const a2 = ease(prog(t, 1.2, 2));
+  txt(640, 360 - 10 * (1 - a2), 'Strom aus Pflanzen', 64, 'Bold', TEXT, a2, 'mm');
+  txt(640, 430, 'Wie funktioniert eine Pflanzen-Brennstoffzelle?', 30, 'Medium', MUTED, ease(prog(t, 1.9, 2.7)), 'mm');
+  const a4 = ease(prog(t, 2.8, 3.5));
+  rrect(520, 486, 760, 524, 19, ACCENT, a4);
+  txt(640, 505, 'Technik · Klasse 9', 18, 'Bold', WHITE, a4, 'mm');
+  txt(640, 650, 'Weiter: Leertaste, Pfeiltaste → oder Klick / Tippen   ·   Zurück: ←   ·   Vollbild: F', 16, 'Medium', MUTED, ease(prog(t, 3.2, 3.8)), 'mm');
+}
+
+const ZOOM_ROOT = new Path([[-40, 175], [250, 195], [520, 185], [800, 205], [1050, 190], [1320, 215]]);
+const ZB = [[200, 395, 1], [420, 410, -1], [640, 390, 1], [860, 405, -1], [1080, 395, 1]];
+const ZOOM_DOTS = (() => { const r = Rng(9), o = []; for (let i = 0; i < 320; i++) o.push([r.uniform(55, 1225), r.uniform(95, 565), r.uniform(1.5, 4.5)]); return o; })();
+function sceneZoom(t) {
+  const z = ST('zoom') ?? 0, w = Wt, a = ease(prog(t, 0, .6));
+  rrect(40, 82, 1240, 578, 18, SOIL, a);
+  for (const [x, y, r] of ZOOM_DOTS) circ(x, y, r, SOIL_DOT, a * .8);
+  line(ZOOM_ROOT.pts, [200, 178, 132], 64, a); line(ZOOM_ROOT.pts, ROOT, 58, a);
+  for (let i = 0; i < 26; i++) {
+    const p = ZOOM_ROOT.at(i / 26 + .015), side = i % 2 ? 1 : -1;
+    line([[p[0], p[1] + side * 28], [p[0] + 5, p[1] + side * 44]], [225, 205, 160], 2, a);
+  }
+  const mid = []; for (let k = 0; k <= 40; k++) mid.push(ZOOM_ROOT.at(k / 40));
+  line(mid, [220, 200, 160], 4, a * .6);
+  txt(70, 128, 'Wurzel', 22, 'Bold', [250, 240, 220], a, 'lm');
+  emit(z - .5, .35, 2.4, (k, u) => {
+    const r = Rng(k), p = ZOOM_ROOT.at(r.uniform(.08, .95));
+    const q = [p[0] + r.uniform(-40, 40), p[1] + r.uniform(60, 150)];
+    sugar(...lerp2([p[0], p[1] + 22], q, ease(u)), a * fadeEnds(u, .1, .3), 10);
+  });
+  txt(1215, 128, 'Wurzelausscheidungen (Zucker)', 20, 'SemiBold', [255, 225, 160], ease(prog(t, 1, 1.6)), 'rm');
+  const an = ease(prog(t, 10.6, 11.4));
+  rrect(90, 500, 1190, 540, 6, GRAPHITE, an);
+  txt(640, 520, 'Elektrode aus Graphit  =  Anode (−)', 20, 'Bold', WHITE, an, 'mm');
+  ZB.forEach(([bx, by, face], i) => {
+    const P = 2.6, off = 1.2 + i * .45;
+    let pulse = 0;
+    if (z >= off) {
+      const kmax = Math.floor((z - off) / P);
+      for (const k of [kmax - 1, kmax]) {
+        if (k < 0) continue;
+        const u = z - off - k * P, r = Rng(i * 31 + k), src = [bx + r.uniform(-60, 60), 240];
+        if (u < 1.2) sugar(...lerp2(src, [bx, by - 20], ease(u / 1.2)), a * clamp(u / .2), 10);
+        pulse = Math.max(pulse, bump(u, 1.05, 1.5));
+        if (t >= 5.5 && u >= 1.25 && u < 2.6) {
+          const v = (u - 1.25) / 1.35;
+          for (let j = 0; j < 2; j++) {
+            const dx = (j - .5) * 50;
+            if (t < 11) electron(...lerp2([bx + dx * .3, by + 20], [bx + dx * 1.4, by + 70], ease(v)), a * fadeEnds(v, .1, .35), 12);
+            else electron(...lerp2([bx + dx * .3, by + 20], [bx + dx, 520], ease(v)), a * fadeEnds(v, .1, .1), 12);
+          }
+        }
+      }
+    }
+    bacterium(bx, by, a * ease(prog(t, .3 + i * .15, .9 + i * .15)), 3.2 * (1 + .12 * pulse), w, face, i);
+  });
+  txt(640, 455, 'Bakterien', 22, 'Bold', [240, 255, 235], ease(prog(t, .8, 1.4)) * (1 - ease(prog(t, 10.4, 10.8))), 'mm');
+  const le = ease(prog(t, 6, 6.6)) * (1 - ease(prog(t, 10.4, 10.8)));
+  rrect(1035, 526, 1215, 560, 17, WHITE, le * .92);
+  electron(1058, 543, le, 10);
+  txt(1076, 543, 'Elektronen (e⁻)', 18, 'Bold', E_LINE, le, 'lm');
+}
+
+const CARD_L = ['Die Pflanze wird nicht geerntet oder verbrannt – sie wächst einfach weiter.',
+  'Liefert Tag und Nacht Strom – auch ohne Wind.', 'Möglich in Feuchtgebieten, Reisfeldern oder auf Gründächern.'];
+const CARD_R = ['Sehr wenig Strom: bisher etwa 0,4 Watt pro Quadratmeter.',
+  'Reicht nur für kleine Geräte wie LED-Lampen oder Messsensoren.', 'Noch in der Forschung – teuer und empfindlich.'];
+function checkIcon(x, y, a, good) {
+  if (good) { circ(x, y, 15, [80, 170, 90], a); line([[x - 7, y], [x - 2, y + 6], [x + 8, y - 6]], WHITE, 3.2, a); }
+  else { circ(x, y, 15, [225, 95, 70], a); line([[x - 7, y], [x + 7, y]], WHITE, 3.4, a); }
+}
+function sceneNutzen(t) {
+  heading(...HEAD.nutzen, ease(prog(t, .2, .8)));
+  [[40, 'Vorteile', [80, 170, 90], CARD_L, .8], [650, 'Nachteile', [225, 95, 70], CARD_R, 4.6]].forEach(([x0, title, col, items, t0], side) => {
+    const ca = ease(prog(t, t0 - .5, t0));
+    rrect(x0, 82, x0 + 590, 572, 18, WHITE, ca, [220, 214, 202], 1.5);
+    rrect(x0, 82, x0 + 590, 140, 18, col, ca);
+    ctx.fillStyle = C(col, ca); ctx.fillRect(x0, 122, 590, 18);
+    txt(x0 + 28, 111, title, 26, 'Bold', WHITE, ca, 'lm');
+    items.forEach((s, i) => {
+      const ia = ease(prog(t, t0 + .4 + i * 1.1, t0 + .9 + i * 1.1)), y = 190 + i * 128;
+      checkIcon(x0 + 44, y + 12, ia, side === 0);
+      wrap(s, 23, 480, 'Medium').forEach((ln, j) => txt(x0 + 76 + 12 * (1 - ia), y + 12 + j * 32, ln, 23, 'Medium', TEXT, ia, 'lm'));
+    });
+  });
+  captionBox(t, CAPS.nutzen);
+}
+function sceneMerke(t) {
+  const w = Wt, BLUE = [50, 105, 165];
+  heading(...HEAD.merke, ease(prog(t, .2, .8)), [80, 140, 200]);
+  [[230, 'Pflanze', 'gibt Zucker in den Boden ab'], [640, 'Bakterien', 'setzen Elektronen frei'], [1050, 'Strom', 'fließt durch den Draht']].forEach(([cx, t1, t2], i) => {
+    const a = ease(prog(t, .6 + i * .9, 1.2 + i * .9));
+    rrect(cx - 170, 82, cx + 170, 284, 18, WHITE, a, [220, 214, 202], 1.5);
+    if (i === 0) {
+      for (let k = 0; k < 7; k++) drawBlade({ base: [cx + (k - 3) * 3, 160], lean: (k - 3) * 6, h: 62 - Math.abs(k - 3) * 5, w: 6, col: [85 + k * 5, 165, 75], ph: k }, w, a);
+      rrect(cx - 34, 160, cx + 34, 180, 5, [175, 120, 75], a);
+      for (let k = 0; k < 3; k++) sugar(cx - 20 + k * 20, 196 + 4 * Math.sin(w * 2 + k), a, 6);
+    } else if (i === 1) {
+      bacterium(cx, 150, a, 2.2, w, 1);
+      electron(cx + 70, 140 + 6 * Math.sin(w * 3), a, 9); electron(cx + 92, 170 + 6 * Math.sin(w * 3 + 1), a, 9);
+    } else lamp(cx, 138, .95 * ease(prog(t, 2.6, 3.2)) * (.92 + .08 * Math.sin(w * 7)), a, 24);
+    txt(cx, 238, t1, 22, 'Bold', TEXT, a, 'mm');
+    txt(cx, 264, t2, 17, 'Medium', MUTED, a, 'mm');
+    if (i < 2) {
+      const aa = ease(prog(t, 1.1 + i * .9, 1.5 + i * .9)), ax = cx + 180;
+      line([[ax, 176], [ax + 50, 176]], ACCENT, 5, aa);
+      poly([[ax + 50, 166], [ax + 64, 176], [ax + 50, 186]], ACCENT, aa);
+    }
+  });
+  const a = ease(prog(t, 3.2, 4));
+  rrect(40, 308, 1240, 640, 18, [235, 243, 250], a, [150, 190, 225], 2);
+  txt(70, 348, 'Merke', 26, 'Bold', BLUE, a, 'lm');
+  const body = 'In einer Pflanzen-Brennstoffzelle gibt die Pflanze Zucker über ihre Wurzeln in den Boden ab. ' +
+    'Bakterien bauen den Zucker ab und geben dabei Elektronen an die Anode (−) ab. ' +
+    'Die Elektronen fließen durch einen Draht zur Kathode (+) – es fließt elektrischer Strom. ' +
+    'An der Kathode entsteht aus Elektronen, Protonen und Sauerstoff Wasser.';
+  const lines = wrap(body, 24, 1130, 'Medium');
+  lines.forEach((ln, j) => txt(70, 396 + j * 36, ln, 24, 'Medium', TEXT, a, 'lm'));
+  const a2 = ease(prog(t, 5, 5.8)), y = 396 + lines.length * 36 + 30;
+  let x = 70;
+  ['Lichtenergie', 'chemische Energie (Zucker)', 'elektrische Energie'].forEach((s, i) => {
+    const bw = tlen(s, 24, 'Bold') + 36;
+    rrect(x, y - 24, x + bw, y + 24, 24, BLUE, a2);
+    txt(x + bw / 2, y, s, 24, 'Bold', WHITE, a2, 'mm');
+    x += bw;
+    if (i < 2) { txt(x + 28, y, '→', 30, 'Bold', BLUE, a2, 'mm'); x += 56; }
+  });
+}
+
+// ============================================================ pause points
+const FADES = { title: [.5, .5], foto: [.5, 0], zoom: [.5, .5], aufbau: [.5, 0], kreis: [0, .5], nutzen: [.5, .5], merke: [.5, 1.2] };
+const PAUSES = [];
+for (const [n, d] of SCENES) {
+  const fo = (FADES[n] || [0, 0])[1];
+  if (n === 'title') PAUSES.push(START[n] + 4);
+  if (CAPS[n]) for (const [, t1] of CAPS[n]) PAUSES.push(START[n] + Math.min(t1 - .35, d - fo - .05));
+  if (n === 'merke') { PAUSES.push(START[n] + 6.5); PAUSES.push(START[n] + d - 1.3); }
+}
+let ti = 0, waiting = false;
+
+function next() {
+  if (!waiting) { G = PAUSES[ti]; waiting = true; resetAnchors(); return; }   // skip to end of current text
+  if (ti < PAUSES.length - 1) { ti++; waiting = false; }
+}
+function prev() {
+  const j = Math.max(0, ti - 1);
+  G = j > 0 ? Math.min(PAUSES[j - 1] + .35, PAUSES[j] - .01) : 0;
+  ti = j; waiting = false; resetAnchors();
+}
+function restart() { G = 0; ti = 0; waiting = false; resetAnchors(); }
+
+addEventListener('keydown', e => {
+  const k = e.key;
+  if ([' ', 'Enter', 'ArrowRight', 'ArrowDown', 'PageDown'].includes(k)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); prev(); }
+  else if (k === 'f' || k === 'F') toggleFS();
+  else if (k === 'r' || k === 'R' || k === 'Home') restart();
+});
+cv.addEventListener('click', next);
+function toggleFS() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
+  else document.exitFullscreen?.();
+}
+document.getElementById('fs').addEventListener('click', e => { e.stopPropagation(); toggleFS(); });
+if (matchMedia('(pointer: coarse)').matches) document.body.classList.add('mouse');
+let mouseTimer;
+addEventListener('mousemove', () => {
+  document.body.classList.add('mouse'); cv.style.cursor = 'pointer';
+  clearTimeout(mouseTimer);
+  mouseTimer = setTimeout(() => { document.body.classList.remove('mouse'); cv.style.cursor = 'none'; }, 2000);
+});
+
+// ============================================================ frame
+function sceneAt(g) {
+  for (let i = SCENES.length - 1; i >= 0; i--) if (g >= START[SCENES[i][0]]) return SCENES[i][0];
+  return SCENES[0][0];
+}
+function drawFrame() {
+  ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
+  ctx.fillStyle = C(BG); ctx.fillRect(0, 0, W, H);
+  const name = sceneAt(G), t = G - START[name];
+  if (name === 'title') sceneTitle(t);
+  else if (name === 'zoom') { heading(...HEAD.zoom, ease(prog(t, .2, .8))); sceneZoom(t); captionBox(t, CAPS.zoom); }
+  else if (name === 'nutzen') sceneNutzen(t);
+  else if (name === 'merke') sceneMerke(t);
+  else {
+    drawDiagram(diagramState(name, t));
+    heading(...HEAD[name], name === 'foto' ? ease(prog(t, .2, .8)) : ease(prog(t, 0, .5)));
+    captionBox(t, CAPS[name]);
+  }
+  // scene fades
+  const [fi, fo] = FADES[name] || [0, 0];
+  let k = 1;
+  if (fi) k = Math.min(k, ease(t / fi));
+  if (fo) k = Math.min(k, ease((DUR[name] - t) / fo));
+  if (k < .999) { ctx.fillStyle = C(BG, 1 - k); ctx.fillRect(0, 0, W, H); }
+  // progress bar
+  ctx.fillStyle = C([220, 214, 202]); ctx.fillRect(0, H - 4, W, 4);
+  ctx.fillStyle = C(ACCENT, .85); ctx.fillRect(0, H - 4, W * G / TOTAL, 4);
+  // waiting indicator
+  if (waiting) {
+    const last = ti === PAUSES.length - 1;
+    const s = last ? 'Ende  ·  R = Neustart' : 'weiter  ▸', pulse = last ? 1 : .55 + .45 * Math.sin(Wt * 4);
+    const bw = tlen(s, 15, 'Bold') + 28;
+    rrect(1232 - bw, 577, 1232, 603, 13, last ? [80, 140, 200] : ACCENT, .9 * pulse);
+    txt(1232 - bw / 2, 590, s, 15, 'Bold', WHITE, pulse, 'mm');
+  }
+}
+
+let lastTs = null;
+function loop(ts) {
+  const dt = lastTs === null ? 0 : Math.min(.1, (ts - lastTs) / 1000);
+  lastTs = ts;
+  Wt += dt;
+  if (!waiting) {
+    G = Math.min(G + dt, PAUSES[ti]);
+    if (G >= PAUSES[ti]) waiting = true;
+  }
+  updateAnchors();
+  drawFrame();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// test hook: jump to a script time
+window.__seek = (g, w) => { G = g; Wt = w ?? g; ti = PAUSES.findIndex(p => p >= g - 1e-6); if (ti < 0) ti = PAUSES.length - 1; waiting = Math.abs(PAUSES[ti] - G) < 1e-6; resetAnchors(); drawFrame(); };
+</script>
+</body>
+</html>
