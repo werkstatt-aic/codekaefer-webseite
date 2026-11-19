@@ -143,6 +143,8 @@ section.dunkel .unterschrift { color: #a9a39a; }
 footer.fuss { background: var(--tinte); color: #bdb7ad; padding: 40px 0; font-size: .93rem; }
 footer.fuss .wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
 footer.fuss a { color: var(--creme); text-decoration: none; margin-left: 20px; }
+footer.fuss .wrap > span:last-child { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+footer.fuss .wrap > span:last-child a { margin-left: 0; }
 footer.fuss a:hover { color: var(--led); }
 footer.fuss img { height: 34px; width: auto; }
 
