@@ -1,0 +1,7 @@
+Schriften der Webseite (selbst gehostet, keine Google-Server)
+
+- Inter 400/600/700 – The Inter Project Authors, https://github.com/rsms/inter
+- Poppins 700 – Indian Type Foundry, https://github.com/itfoundry/Poppins
+
+Beide unter der SIL Open Font License 1.1. Die Dateien sind auf lateinische
+Zeichen gekürzt (pyftsubset, WOFF).
