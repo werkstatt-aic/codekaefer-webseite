@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codekäfer – Downloads</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/stil.css?v=8">
+<style>
+  main { max-width: 760px; margin: 0 auto; padding: 40px 24px 60px; }
+  .zahlen { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0 28px; }
+  .zahl { background: var(--weiss); border: 1px solid var(--linie); border-radius: var(--radius); padding: 18px 20px; }
+  .zahl b { display: block; font-size: 2.6rem; line-height: 1.1; font-weight: 750; color: var(--tinte); }
+  .zahl span { color: var(--grau); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; background: var(--weiss); border: 1px solid var(--linie); border-radius: var(--radius); overflow: hidden; }
+  th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--linie); }
+  th { background: var(--creme-2); font-size: .9rem; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: 0; }
+  .notiz { color: var(--grau); font-size: .92rem; margin-top: 18px; }
+  .fehler { background: #ffe1b8; border: 2px solid var(--led-dunkel); border-radius: var(--radius); padding: 12px 16px; }
+  button { font: inherit; font-weight: 600; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--tinte); background: var(--weiss); cursor: pointer; }
+  @media (max-width: 520px) { .zahlen { grid-template-columns: 1fr; } .zahl b { font-size: 2.2rem; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Downloads</h1>
+  <p>Wie oft Codekäfer und Schulserver über die Knöpfe auf codekaefer.de heruntergeladen wurden. GitHub zählt die Downloads, diese Seite fragt die Zahlen dort ab.</p>
+  <div id="fehler" class="fehler" hidden></div>
+  <div class="zahlen">
+    <div class="zahl"><b id="ck">…</b><span>Codekäfer</span></div>
+    <div class="zahl"><b id="ss">…</b><span>Schulserver</span></div>
+  </div>
+  <table>
+    <thead><tr><th>Version</th><th>seit</th><th class="n">Codekäfer</th><th class="n">Schulserver</th></tr></thead>
+    <tbody id="liste"></tbody>
+  </table>
+  <p class="notiz"><span id="stand"></span> <button type="button" id="neu">Aktualisieren</button></p>
+  <p class="notiz">Gezählt wird seit dem 21.11.2026. Nicht enthalten sind Updates, die die Programme selbst holen, und Downloads direkt aus der Update-Ablage. Die Zahlen können auch einzelne automatische Abrufe enthalten (z. B. von Suchmaschinen).</p>
+</main>
+<script>
+(function () {
+  'use strict';
+  var API = 'https://api.github.com/repos/werkstatt-aic/codekaefer-webseite/releases?per_page=100&page=';
+  var zahl = function (n) { return n.toLocaleString('de-DE'); };
+  var anzahl = function (rel, name) {
+    var a = (rel.assets || []).filter(function (x) { return x.name === name; })[0];
+    return a ? a.download_count : 0;
+  };
+  function zeile(werte) {
+    var tr = document.createElement('tr');
+    werte.forEach(function (w, i) {
+      var td = document.createElement('td');
+      td.textContent = w;
+      if (i >= 2) td.className = 'n';
+      tr.appendChild(td);
+    });
+    return tr;
+  }
+  async function alleReleases() {
+    var alle = [];
+    for (var seite = 1; seite <= 20; seite++) {
+      var r = await fetch(API + seite, { headers: { Accept: 'application/vnd.github+json' } });
+      if (!r.ok) throw new Error(r.status === 403 || r.status === 429
+        ? 'GitHub hat gerade zu viele Abfragen aus diesem Netz bekommen (höchstens 60 pro Stunde). Bitte später neu laden.'
+        : 'GitHub antwortet nicht wie erwartet (' + r.status + ').');
+      var teil = await r.json();
+      alle = alle.concat(teil);
+      if (teil.length < 100) break;
+    }
+    return alle.filter(function (x) { return !x.draft; });
+  }
+  async function laden() {
+    var fehler = document.getElementById('fehler');
+    fehler.hidden = true;
+    try {
+      var rel = await alleReleases();
+      var ck = 0, ss = 0, liste = document.getElementById('liste');
+      liste.textContent = '';
+      rel.forEach(function (x) {
+        var a = anzahl(x, 'Codekaefer.zip'), b = anzahl(x, 'Codekaefer-Schulserver.zip');
+        ck += a; ss += b;
+        var datum = new Date(x.published_at || x.created_at).toLocaleDateString('de-DE');
+        liste.appendChild(zeile([x.name || x.tag_name, datum, zahl(a), zahl(b)]));
+      });
+      document.getElementById('ck').textContent = zahl(ck);
+      document.getElementById('ss').textContent = zahl(ss);
+      document.getElementById('stand').textContent = 'Stand: ' + new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' }) + ' Uhr.';
+    } catch (e) {
+      fehler.textContent = e.message || 'Die Zahlen konnten nicht geladen werden. Besteht eine Internetverbindung?';
+      fehler.hidden = false;
+    }
+  }
+  document.getElementById('neu').addEventListener('click', laden);
+  laden();
+})();
+</script>
+</body>
+</html>
