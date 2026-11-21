@@ -1,0 +1,44 @@
+# Download-Zähler: Legt für die Download-Knöpfe der Homepage ein GitHub-Release mit den aktuellen
+# Paketen an. GitHub zählt, wie oft Release-Dateien heruntergeladen werden (siehe zaehler.html).
+# Auslöser: Änderung an downloads.json (Versionen, Commit in werkstatt-aic/codekaefer, SHA-256 der Pakete).
+# Releases nur hier in der Homepage-Ablage – nie in werkstatt-aic/codekaefer, dort sucht das Startprogramm Updates.
+name: Downloads als Release
+on:
+  push:
+    branches: [main]
+    paths: [downloads.json]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: downloads-release
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pakete holen, prüfen und als Release veröffentlichen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          CK=$(jq -r .codekaefer downloads.json)
+          SS=$(jq -r .schulserver downloads.json)
+          SRC=$(jq -r .commit downloads.json)
+          TAG="codekaefer-$CK-schulserver-$SS"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG gibt es schon."
+            exit 0
+          fi
+          mkdir pakete
+          for f in Codekaefer.zip Codekaefer-Schulserver.zip; do
+            curl -fsSL --retry 3 -o "pakete/$f" "https://raw.githubusercontent.com/werkstatt-aic/codekaefer/$SRC/update/$f"
+            soll=$(jq -r --arg f "$f" '.sha256[$f]' downloads.json)
+            ist=$(sha256sum "pakete/$f" | cut -d' ' -f1)
+            if [ "$soll" != "$ist" ]; then
+              echo "Prüfsumme von $f stimmt nicht: $ist statt $soll"
+              exit 1
+            fi
+          done
+          gh release create "$TAG" pakete/Codekaefer.zip pakete/Codekaefer-Schulserver.zip \
+            --title "Codekäfer $CK / Schulserver $SS" --latest \
+            --notes "Downloads für codekaefer.de: Codekäfer $CK (Codekaefer.zip) und Codekäfer Schulserver $SS (Codekaefer-Schulserver.zip). Beide Pakete sind digital signiert. Updates spielen die Programme selbst ein (Einstellungen › „Nach Updates suchen“)."

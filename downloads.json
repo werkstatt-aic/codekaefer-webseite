@@ -1,0 +1,9 @@
+{
+  "codekaefer": "0.30.0",
+  "schulserver": "0.15.0",
+  "commit": "1809acf1a4f259b632eb84920ab8544001d8ba3f",
+  "sha256": {
+    "Codekaefer.zip": "50591e37d2cd64bf87902ad799f7ae983e9c1b670f510de556b389320cc5cd37",
+    "Codekaefer-Schulserver.zip": "816f2dd1b7af3ea02e0338273fa1adb3d59119b0d0736100a9ea8d5767d2a942"
+  }
+}
