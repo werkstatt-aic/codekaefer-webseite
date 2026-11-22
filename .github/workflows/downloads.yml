@@ -1,12 +1,15 @@
 # Download-Zähler: Legt für die Download-Knöpfe der Homepage ein GitHub-Release mit den aktuellen
-# Paketen an. GitHub zählt, wie oft Release-Dateien heruntergeladen werden (siehe zaehler.html).
-# Auslöser: Änderung an downloads.json (Versionen, Commit in werkstatt-aic/codekaefer, SHA-256 der Pakete).
+# Paketen und allen Materialien (PDFs) an. GitHub zählt, wie oft Release-Dateien heruntergeladen werden
+# (siehe zaehler.html).
+# Auslöser: Änderung an downloads.json (Versionen, Commit in werkstatt-aic/codekaefer, SHA-256 der Pakete,
+# Liste der Materialien) oder an einem PDF im Ordner material/. Geänderte PDFs bekommen ein neues Release,
+# die Zahlen der älteren Releases zählt zaehler.html mit.
 # Releases nur hier in der Homepage-Ablage – nie in werkstatt-aic/codekaefer, dort sucht das Startprogramm Updates.
 name: Downloads als Release
 on:
   push:
     branches: [main]
-    paths: [downloads.json]
+    paths: [downloads.json, 'material/**']
   workflow_dispatch:
 permissions:
   contents: write
@@ -16,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Pakete holen, prüfen und als Release veröffentlichen
+      - name: Pakete holen, prüfen und mit den Materialien als Release veröffentlichen
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -24,12 +27,23 @@ jobs:
           CK=$(jq -r .codekaefer downloads.json)
           SS=$(jq -r .schulserver downloads.json)
           SRC=$(jq -r .commit downloads.json)
-          TAG="codekaefer-$CK-schulserver-$SS"
+          mkdir pakete
+          # Materialien aus dieser Ablage; ihre Prüfsumme gehört zur Kennung des Releases
+          jq -r '.material[].datei' downloads.json > material.txt
+          : > material.sha
+          while IFS= read -r f; do
+            case "$f" in
+              ''|*/*|.*) echo "Ungültiger Dateiname in downloads.json: $f"; exit 1 ;;
+            esac
+            cp "material/$f" "pakete/$f"
+            sha256sum "pakete/$f" >> material.sha
+          done < material.txt
+          MH=$(sha256sum material.sha | cut -c1-8)
+          TAG="codekaefer-$CK-schulserver-$SS-material-$MH"
           if gh release view "$TAG" > /dev/null 2>&1; then
             echo "Release $TAG gibt es schon."
             exit 0
           fi
-          mkdir pakete
           for f in Codekaefer.zip Codekaefer-Schulserver.zip; do
             curl -fsSL --retry 3 -o "pakete/$f" "https://raw.githubusercontent.com/werkstatt-aic/codekaefer/$SRC/update/$f"
             soll=$(jq -r --arg f "$f" '.sha256[$f]' downloads.json)
@@ -39,6 +53,6 @@ jobs:
               exit 1
             fi
           done
-          gh release create "$TAG" pakete/Codekaefer.zip pakete/Codekaefer-Schulserver.zip \
-            --title "Codekäfer $CK / Schulserver $SS" --latest \
-            --notes "Downloads für codekaefer.de: Codekäfer $CK (Codekaefer.zip) und Codekäfer Schulserver $SS (Codekaefer-Schulserver.zip). Beide Pakete sind digital signiert. Updates spielen die Programme selbst ein (Einstellungen › „Nach Updates suchen“)."
+          gh release create "$TAG" pakete/* \
+            --title "Codekäfer $CK / Schulserver $SS · Material vom $(TZ=Europe/Berlin date +%d.%m.%Y)" --latest \
+            --notes "Downloads für codekaefer.de: Codekäfer $CK (Codekaefer.zip), Codekäfer Schulserver $SS (Codekaefer-Schulserver.zip) und die Materialien als PDF. Beide Pakete sind digital signiert. Updates spielen die Programme selbst ein (Einstellungen › „Nach Updates suchen“)."

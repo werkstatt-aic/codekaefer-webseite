@@ -9,7 +9,11 @@
 <link rel="stylesheet" href="css/stil.css?v=9">
 <style>
   main { max-width: 760px; margin: 0 auto; padding: 40px 24px 60px; }
-  .zahlen { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0 28px; }
+  .zahlen { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 24px 0 28px; }
+  h2 { margin: 30px 0 10px; font-size: 1.15rem; }
+  .eigen { background: var(--weiss); border: 1px solid var(--linie); border-radius: var(--radius); padding: 14px 18px; margin-top: 26px; }
+  .eigen label { display: flex; gap: 10px; align-items: center; font-weight: 600; cursor: pointer; }
+  .eigen input { width: 20px; height: 20px; }
   .zahl { background: var(--weiss); border: 1px solid var(--linie); border-radius: var(--radius); padding: 18px 20px; }
   .zahl b { display: block; font-size: 2.6rem; line-height: 1.1; font-weight: 750; color: var(--tinte); }
   .zahl span { color: var(--grau); font-weight: 600; }
@@ -21,24 +25,35 @@
   .notiz { color: var(--grau); font-size: .92rem; margin-top: 18px; }
   .fehler { background: #ffe1b8; border: 2px solid var(--led-dunkel); border-radius: var(--radius); padding: 12px 16px; }
   button { font: inherit; font-weight: 600; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--tinte); background: var(--weiss); cursor: pointer; }
-  @media (max-width: 520px) { .zahlen { grid-template-columns: 1fr; } .zahl b { font-size: 2.2rem; } }
+  @media (max-width: 620px) { .zahlen { grid-template-columns: 1fr; } .zahl b { font-size: 2.2rem; } }
 </style>
 </head>
 <body>
 <main>
   <h1>Downloads</h1>
-  <p>Wie oft Codekäfer und Schulserver über die Knöpfe auf codekaefer.de heruntergeladen wurden. GitHub zählt die Downloads, diese Seite fragt die Zahlen dort ab.</p>
+  <p>Wie oft Codekäfer, Schulserver und die Materialien über die Knöpfe auf codekaefer.de heruntergeladen wurden. GitHub zählt die Downloads, diese Seite fragt die Zahlen dort ab.</p>
   <div id="fehler" class="fehler" hidden></div>
   <div class="zahlen">
     <div class="zahl"><b id="ck">…</b><span>Codekäfer</span></div>
     <div class="zahl"><b id="ss">…</b><span>Schulserver</span></div>
+    <div class="zahl"><b id="mat">…</b><span>Materialien (PDF)</span></div>
   </div>
+  <h2>Programme je Version</h2>
   <table>
     <thead><tr><th>Version</th><th>seit</th><th class="n">Codekäfer</th><th class="n">Schulserver</th></tr></thead>
     <tbody id="liste"></tbody>
   </table>
+  <h2>Materialien</h2>
+  <table>
+    <thead><tr><th>Material</th><th class="n">Downloads</th></tr></thead>
+    <tbody id="material"></tbody>
+  </table>
+  <div class="eigen">
+    <label><input type="checkbox" id="eigen"> Meine Downloads auf diesem Gerät nicht mitzählen</label>
+    <p class="notiz" style="margin:8px 0 0">Ist der Haken gesetzt, zeigen die Download-Knöpfe auf codekaefer.de in diesem Browser auf ungezählte Kopien derselben Dateien (Materialien direkt von codekaefer.de, Programme direkt aus der Update-Ablage). Gilt nur für diesen Browser auf diesem Gerät – auf jedem Gerät einmal setzen. Gespeichert wird nur die Einstellung, im Browser; übertragen wird nichts.</p>
+  </div>
   <p class="notiz"><span id="stand"></span> <button type="button" id="neu">Aktualisieren</button></p>
-  <p class="notiz">Gezählt wird seit dem 21.11.2026. Nicht enthalten sind Updates, die die Programme selbst holen, und Downloads direkt aus der Update-Ablage. Die Zahlen können auch einzelne automatische Abrufe enthalten (z. B. von Suchmaschinen).</p>
+  <p class="notiz">Gezählt wird seit dem 21.11.2026, die Materialien seit dem 22.11.2026. Nicht enthalten sind Updates, die die Programme selbst holen, und Downloads direkt aus der Update-Ablage. Die Zahlen können auch einzelne automatische Abrufe enthalten (z. B. von Suchmaschinen).</p>
 </main>
 <script>
 (function () {
@@ -72,10 +87,15 @@
     }
     return alle.filter(function (x) { return !x.draft; });
   }
+  async function materialListe() {
+    try { var r = await fetch('downloads.json', { cache: 'no-store' }); return (await r.json()).material || []; }
+    catch (e) { return []; }
+  }
   async function laden() {
     var fehler = document.getElementById('fehler');
     fehler.hidden = true;
     try {
+      var mat = await materialListe();
       var rel = await alleReleases();
       var ck = 0, ss = 0, liste = document.getElementById('liste');
       liste.textContent = '';
@@ -87,6 +107,16 @@
       });
       document.getElementById('ck').textContent = zahl(ck);
       document.getElementById('ss').textContent = zahl(ss);
+      var summe = 0, tab = document.getElementById('material');
+      tab.textContent = '';
+      mat.forEach(function (m) {
+        var n = rel.reduce(function (s, x) { return s + anzahl(x, m.datei); }, 0);
+        summe += n;
+        var tr = document.createElement('tr'), a = document.createElement('td'), b = document.createElement('td');
+        a.textContent = m.titel; b.textContent = zahl(n); b.className = 'n';
+        tr.appendChild(a); tr.appendChild(b); tab.appendChild(tr);
+      });
+      document.getElementById('mat').textContent = zahl(summe);
       document.getElementById('stand').textContent = 'Stand: ' + new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' }) + ' Uhr.';
     } catch (e) {
       fehler.textContent = e.message || 'Die Zahlen konnten nicht geladen werden. Besteht eine Internetverbindung?';
@@ -94,6 +124,13 @@
     }
   }
   document.getElementById('neu').addEventListener('click', laden);
+  // eigene Downloads nicht mitzählen (liest js/eigen.js auf der Startseite)
+  var schalter = document.getElementById('eigen');
+  try { schalter.checked = localStorage.getItem('codekaefer-eigen') === '1'; } catch (e) { schalter.disabled = true; }
+  schalter.addEventListener('change', function () {
+    try { if (schalter.checked) localStorage.setItem('codekaefer-eigen', '1'); else localStorage.removeItem('codekaefer-eigen'); }
+    catch (e) { schalter.checked = false; }
+  });
   laden();
 })();
 </script>

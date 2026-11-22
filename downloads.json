@@ -1,9 +1,55 @@
 {
-  "codekaefer": "0.32.1",
-  "schulserver": "0.16.1",
-  "commit": "7205d0f7da0df459aaffa3a519f80f4aa7df8e41",
+  "codekaefer": "0.33.0",
+  "schulserver": "0.17.0",
+  "commit": "ab1ac00efd904950febdeef442737bf5835fefbf",
   "sha256": {
-    "Codekaefer.zip": "56c274b317dc4c9c7f622d4c88b71f131bf6c59161d4c888a85c60be6c7ff02e",
-    "Codekaefer-Schulserver.zip": "a04434e55c5a26910f34f666982cc06c6b9d61fade1adbc30406e7fbada89a3d"
-  }
+    "Codekaefer.zip": "cee7e5f73e9295148e052f6e98e741d1fe1e14b1cd69c09d852a9d0d43f78e9a",
+    "Codekaefer-Schulserver.zip": "ca080698d7725d086658b8b13e9534906956a1ac84cfd1d878e617945ab30705"
+  },
+  "material": [
+    {
+      "datei": "codekaefer-schuelerskript.pdf",
+      "titel": "Schülerskript „Programmieren mit dem Codekäfer“"
+    },
+    {
+      "datei": "codekaefer-schulserver-lehrkraefte.pdf",
+      "titel": "Anleitung für Lehrkräfte (Schulserver)"
+    },
+    {
+      "datei": "codekaefer-baukasten-anleitung.pdf",
+      "titel": "Anleitung Baukasten"
+    },
+    {
+      "datei": "codekaefer-installation-admins.pdf",
+      "titel": "Installation für Admins"
+    },
+    {
+      "datei": "codekaefer-ueberblick.pdf",
+      "titel": "Überblick (Oberfläche)"
+    },
+    {
+      "datei": "codekaefer-anleitung-calliope-mini.pdf",
+      "titel": "Anleitung Calliope mini"
+    },
+    {
+      "datei": "codekaefer-anleitung-microbit.pdf",
+      "titel": "Anleitung micro:bit"
+    },
+    {
+      "datei": "codekaefer-anleitung-getriebemotor.pdf",
+      "titel": "Anleitung Getriebemotor"
+    },
+    {
+      "datei": "codekaefer-flyer.pdf",
+      "titel": "Flyer"
+    },
+    {
+      "datei": "codekaefer-faltblatt.pdf",
+      "titel": "Faltblatt für die Fachschaft"
+    },
+    {
+      "datei": "codekaefer-info-schulleitung.pdf",
+      "titel": "Information für die Schulleitung"
+    }
+  ]
 }
