@@ -1,10 +1,10 @@
 {
-  "codekaefer": "0.33.1",
-  "schulserver": "0.17.1",
-  "commit": "b7a1560c45b2daa5ee6e268632ed83bdd284ba0e",
+  "codekaefer": "0.33.2",
+  "schulserver": "0.17.2",
+  "commit": "5ce14f0b3e3f6dc94264d888f4799abaf7310241",
   "sha256": {
-    "Codekaefer.zip": "5a147d66c8b200340954eeda37ade0fea9fe6da02ad21dcc336e0ecaead6a6a5",
-    "Codekaefer-Schulserver.zip": "b15dfab5854d884e76c74e0ff8b3bf6f747e8a4cbc12c6f65d349e0fc0b2c675"
+    "Codekaefer.zip": "4d6cf380822530c3315f94026ce73e573a7a277a5d5318eb13cc382012e22626",
+    "Codekaefer-Schulserver.zip": "4eab1140f55c92765d018ec4c0b3ca05dfecfe3ddd0e04fdcb3637c44712265c"
   },
   "material": [
     {
