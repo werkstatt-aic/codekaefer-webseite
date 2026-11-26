@@ -39,7 +39,10 @@ jobs:
             sha256sum "pakete/$f" >> material.sha
           done < material.txt
           MH=$(sha256sum material.sha | cut -c1-8)
-          TAG="codekaefer-$CK-schulserver-$SS-material-$MH"
+          # Prüfsummen der Pakete gehören mit zur Kennung: ein neu gebautes Paket mit gleicher Versionsnummer
+          # (z. B. 26.11.2026: 0.17.2 neu mit Go 1.24.7) bekommt so ein eigenes Release
+          PH=$(jq -r '.sha256["Codekaefer.zip"] + .sha256["Codekaefer-Schulserver.zip"]' downloads.json | sha256sum | cut -c1-8)
+          TAG="codekaefer-$CK-schulserver-$SS-material-$MH-pakete-$PH"
           if gh release view "$TAG" > /dev/null 2>&1; then
             echo "Release $TAG gibt es schon."
             exit 0
